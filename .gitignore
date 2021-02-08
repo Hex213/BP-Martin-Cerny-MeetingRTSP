@@ -361,3 +361,10 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/ServerCommand.json
+/old.rar
+/ServerCommand1.json
+/Client_server.srctrlprj
+/Client_server.srctrldb
+/Client_server.srctrlbm
+/Client(Server).json
