@@ -26,6 +26,8 @@ namespace MeetingClient.Forms.Create
             Pin = new NamedPipeServer(@"\\.\pipe\serverIN", 0);
             Pout = new NamedPipeServer(@"\\.\pipe\serverOUT", 1);
 
+            
+
             do
             {
                 Pin.Start();
