@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
 
-namespace LibUIAcademy
+namespace LibUIAcademy.XanderUI
 {
     public class ButtonRounded : Button
     {
