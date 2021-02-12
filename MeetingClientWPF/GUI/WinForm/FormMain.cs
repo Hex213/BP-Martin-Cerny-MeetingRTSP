@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MeetingClientWPF.GUI.Controllers;
+using MeetingClientWPF.Properties;
 
 namespace MeetingClientWPF.GUI.WinForm
 {
@@ -18,9 +19,23 @@ namespace MeetingClientWPF.GUI.WinForm
             InitializeComponent();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void FormMain_Load(object sender, EventArgs e)
         {
-            ContextController.Go(false);
+            butConnect.ButtonText = Resources.butConnect;
+            butConnect.ButtonImage = Resources.ConnectImg;
+            butCreate.ButtonText = Resources.butCreate;
+            butCreate.ButtonImage = Resources.CreateImg;
+
+        }
+
+        private void butConnect_Click(object sender, EventArgs e)
+        {
+            ContextController.ExitWinForm(false);
+        }
+
+        private void butCreate_Click(object sender, EventArgs e)
+        {
+            ContextController.ExitWinForm(true);
         }
     }
 }

@@ -1,0 +1,13 @@
+﻿<Page x:Class="MeetingClientWPF.GUI.WPF.Connect.Connect_Wait"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:MeetingClientWPF.GUI.WPF.Connect"
+      mc:Ignorable="d"
+      Title="Connect_Wait" Width="650" Height="384" MinWidth="650" MinHeight="384">
+
+	<Grid>
+
+	</Grid>
+</Page>

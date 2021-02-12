@@ -222,13 +222,13 @@ namespace LibUIAcademy.XanderUI
 
         // Properties
         [Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
-        public Color BackColor { get; set; }
+        public override Color BackColor { get; set; }
 
         [Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
-        public Color ForeColor { get; set; }
+        public override Color ForeColor { get; set; }
 
         [Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
-        public string Text { get; set; }
+        public override string Text { get; set; }
 
         [Category("XanderUI"), Browsable(true), Description("The button style")]
         public Style ButtonStyle

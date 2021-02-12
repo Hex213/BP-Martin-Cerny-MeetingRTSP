@@ -22,9 +22,9 @@ namespace MeetingClientWPF.GUI.Controllers
 
         private static sbyte _actual = 0, min = -1, max = 1;
         
-        private static Window _mainWindow = null;
         private static WindowsFormsHost host = null;
         private static Grid _context = null;
+        private static IWPFWindow _controlWindow = null;
 
         //Layers < 0 - connect
         //Layers = 0 - main
@@ -48,14 +48,15 @@ namespace MeetingClientWPF.GUI.Controllers
             }
         }
 
-        public static void Init(in Grid contextGrid, in bool optLazyAlloc = true, in bool optLowMemory = false)
+        public static void Init(in Grid contextGrid, in IWPFWindow controlWindow, in bool optLazyAlloc = true, in bool optLowMemory = false)
         {
             if (contextGrid == null) throw new ArgumentNullException(nameof(contextGrid) + " = null");
+            if (controlWindow == null) throw new ArgumentNullException(nameof(controlWindow) + " = null");
 
             _lazyAllocation = optLazyAlloc;
             _lowMemory = optLowMemory;
-            _mainWindow = contextGrid.Parent as Window;
             _context = contextGrid;
+            _controlWindow = controlWindow;
             if(!optLazyAlloc) //ak nie je lazy -> vytvor vsetky
             {
                 host = new WindowsFormsHost();
@@ -153,6 +154,21 @@ namespace MeetingClientWPF.GUI.Controllers
 
             _actual = 0;
             Show(0);
+        }
+
+        public static void ExitWinForm(bool type)
+        {
+            _clear();
+            _controlWindow.EndWinForm(type);
+        }
+
+        public static void ShowPage(Page page)
+        {
+            if (page == null) throw new ArgumentNullException(nameof(page) + " = null");
+            _isInitialized();
+            _firstUse();
+
+            _controlWindow.ShowPage(page);
         }
     }
 }
