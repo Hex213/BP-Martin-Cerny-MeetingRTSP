@@ -47,7 +47,7 @@ namespace MeetingClientWPF.GUI.WPF.Connect
             if (HexConnectionCheck.IsActive(TextIP.Text, 500, out rectime))
             {
                 //TODO: detect if is slow or fast
-                ContextController.ShowPage(new Connect_3());
+                ContextController.ShowWpfPage(new Connect_3());
             }
             else
             {

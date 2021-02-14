@@ -7,5 +7,7 @@ namespace MeetingClientWPF.GUI.Controllers
         public void EndWinForm(bool type);
         public void StartWinForm();
         public void ShowPage(Page page);
+        public void HideForm();
+        public void ShowForm();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -10,6 +11,7 @@ using System.Windows.Forms.Integration;
 using MeetingClientWPF.GUI.Controllers.Exceptions;
 using MeetingClientWPF.GUI.WinForm;
 using Microsoft.VisualBasic.CompilerServices;
+using SimpleRtspPlayer.GUI.Views.Main.WinForm;
 
 namespace MeetingClientWPF.GUI.Controllers
 {
@@ -25,6 +27,7 @@ namespace MeetingClientWPF.GUI.Controllers
         private static WindowsFormsHost host = null;
         private static Grid _context = null;
         private static IWPFWindow _controlWindow = null;
+        private static IWPFWindow _workWindow = null;
 
         //Layers < 0 - connect
         //Layers = 0 - main
@@ -61,7 +64,7 @@ namespace MeetingClientWPF.GUI.Controllers
             {
                 host = new WindowsFormsHost();
                 _forms = new Dictionary<sbyte, Form>();
-                _forms.Add(0, new FormMain());
+                //_forms.Add(0, new FormMain());
             }
             _isInit = true;
         }
@@ -80,7 +83,7 @@ namespace MeetingClientWPF.GUI.Controllers
 
         private static void _showMain() //INDEX:0
         {
-            _forms[0] ??= new FormMain();
+            //_forms[0] ??= new FormMain();
             _show(_forms[0]);
         }
 
@@ -162,13 +165,27 @@ namespace MeetingClientWPF.GUI.Controllers
             _controlWindow.EndWinForm(type);
         }
 
-        public static void ShowPage(Page page)
+        public static void ShowWpfPage(Page page)
         {
             if (page == null) throw new ArgumentNullException(nameof(page) + " = null");
             _isInitialized();
             _firstUse();
 
             _controlWindow.ShowPage(page);
+        }
+
+        public static void ShowWpfWindow(IWPFWindow window)
+        {
+            _workWindow = window ?? throw new ArgumentNullException(nameof(window));
+            var otherForm = _workWindow as Window;
+            otherForm.Closed += workForm_FormClosed;
+            _controlWindow.HideForm();
+            otherForm.Show();
+        }
+
+        private static void workForm_FormClosed(object? sender, EventArgs e)
+        {
+            _controlWindow.ShowForm();
         }
     }
 }

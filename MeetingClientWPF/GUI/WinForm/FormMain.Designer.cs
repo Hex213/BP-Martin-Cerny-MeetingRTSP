@@ -1,5 +1,5 @@
 ﻿
-namespace MeetingClientWPF.GUI.WinForm
+namespace SimpleRtspPlayer.GUI.Views.Main.WinForm
 {
     partial class FormMain
     {

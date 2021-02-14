@@ -1,8 +1,7 @@
 ﻿using System;
-using MeetingClientWPF.Engine;
 using RtspClientSharp;
 
-namespace SimpleRtspPlayer.GUI.Models
+namespace MeetingClientWPF.Engine.Models
 {
     public interface IMainWindowModel
     {

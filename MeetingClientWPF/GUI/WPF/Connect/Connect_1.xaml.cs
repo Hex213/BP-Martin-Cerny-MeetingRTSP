@@ -77,7 +77,7 @@ namespace MeetingClientWPF.GUI.WPF.Connect
                 Settings.Default.Save();
             }
 
-            ContextController.ShowPage(new Connect_2());
+            ContextController.ShowWpfPage(new Connect_2());
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

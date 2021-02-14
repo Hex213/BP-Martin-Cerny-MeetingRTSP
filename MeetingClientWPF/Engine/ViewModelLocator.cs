@@ -1,20 +1,20 @@
 ﻿using System;
+using MeetingClientWPF.Engine.Models;
 using MeetingClientWPF.GUI.WPF.Connect;
-using SimpleRtspPlayer.GUI.Models;
 
 namespace MeetingClientWPF.Engine
 {
     class ViewModelLocator
     {
-        private readonly Lazy<Connect_3> _mainWindowViewModelLazy =
-            new Lazy<Connect_3>(CreateMainWindowViewModel);
+        private readonly Lazy<MainWindowViewModel> _mainWindowViewModelLazy =
+            new Lazy<MainWindowViewModel>(CreateMainWindowViewModel);
 
-        public Connect_3 MainWindowViewModel => _mainWindowViewModelLazy.Value;
+        public MainWindowViewModel MainWindowViewModel => _mainWindowViewModelLazy.Value;
 
-        private static Connect_3 CreateMainWindowViewModel()
+        private static MainWindowViewModel CreateMainWindowViewModel()
         {
             var model = new MainWindowModel();
-            return new Connect_3(model);
+            return new MainWindowViewModel(model);
         }
     }
 }

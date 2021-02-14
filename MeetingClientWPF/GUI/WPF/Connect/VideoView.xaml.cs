@@ -12,7 +12,7 @@ using MeetingClientWPF.Engine.RawFramesDecoding;
 using MeetingClientWPF.Engine.RawFramesDecoding.DecodedFrames;
 using PixelFormat = MeetingClientWPF.Engine.RawFramesDecoding.PixelFormat;
 
-namespace SimpleRtspPlayer.GUI.Views
+namespace MeetingClientWPF.GUI.WPF.Connect
 {
     /// <summary>
     /// Interaction logic for VideoView.xaml

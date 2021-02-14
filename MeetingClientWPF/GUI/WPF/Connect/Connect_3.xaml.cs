@@ -6,8 +6,9 @@ using System.Windows;
 using System.Windows.Controls;
 using GalaSoft.MvvmLight.Command;
 using MeetingClientWPF.Engine;
+using MeetingClientWPF.Engine.Models;
+using MeetingClientWPF.GUI.Controllers;
 using RtspClientSharp;
-using SimpleRtspPlayer.GUI.Models;
 
 namespace MeetingClientWPF.GUI.WPF.Connect
 {
@@ -127,7 +128,7 @@ namespace MeetingClientWPF.GUI.WPF.Connect
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            _ = _start();
+            ContextController.ShowWpfWindow(new MainWindow());
         }
     }
 }

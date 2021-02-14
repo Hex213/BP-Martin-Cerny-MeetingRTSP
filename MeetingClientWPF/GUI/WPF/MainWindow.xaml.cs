@@ -36,7 +36,7 @@ namespace MeetingClientWPF.GUI.WPF
             }
             else//false - connect
             {
-                ContextController.ShowPage(new Connect_1());
+                ContextController.ShowWpfPage(new Connect_1());
             }
         }
 
@@ -48,6 +48,21 @@ namespace MeetingClientWPF.GUI.WPF
         public void ShowPage(Page page)
         {
             this.Content = page;
+        }
+
+        public void HideForm()
+        {
+            this.Hide();
+        }
+
+        public void ShowForm()
+        {
+            this.Show();
+        }
+
+        private void Window_Closed(object sender, System.EventArgs e)
+        {
+
         }
     }
 }

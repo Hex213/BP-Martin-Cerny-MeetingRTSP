@@ -4,7 +4,6 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:MeetingClientWPF.GUI.WPF.Connect"
-      xmlns:Views="clr-namespace:SimpleRtspPlayer.GUI.Views"
       xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
       xmlns:command="http://www.galasoft.ch/mvvmlight"
       x:Class="MeetingClientWPF.GUI.WPF.Connect.Connect_3"
@@ -24,6 +23,11 @@
 			<ColumnDefinition Width="75*"/>
 			<ColumnDefinition Width="25*"/>
 		</Grid.ColumnDefinitions>
+		<Grid x:Name="GridVideo" Grid.Column="0">
+			<Frame x:Name="MyFrame" Content="Frame"/>
+			<Grid/>
+
+		</Grid>
 		<Grid x:Name="GridPanel" Grid.Column="1">
 			<StackPanel>
 				<Expander VerticalAlignment="Top" Header="Expander" Width="Auto" Height="Auto" ExpandDirection="Down" HorizontalAlignment="Left">
@@ -55,7 +59,5 @@
 				<Button Content="Button" Click="Button_Click"/>
 			</StackPanel>
 		</Grid>
-		<Views:VideoView HorizontalAlignment="Center" Margin="0,0,0,0" VerticalAlignment="Top" VideoSource="{Binding VideoSource}" />
-		<TextBlock Margin="2" Grid.Row="4" Height="20" Background="LightGray" Text="{Binding Status}" />
 	</Grid>
 </Page>
