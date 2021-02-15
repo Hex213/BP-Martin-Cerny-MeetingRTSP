@@ -5,7 +5,7 @@ namespace SimpleRtspPlayer.RawFramesDecoding.FFmpeg
 {
     enum FFmpegVideoCodecId
     {
-        MJPEG = 7,
+        Mjpeg = 7,
         H264 = 27
     }
 
@@ -22,9 +22,9 @@ namespace SimpleRtspPlayer.RawFramesDecoding.FFmpeg
     enum FFmpegPixelFormat
     {
         None = -1,
-        BGR24 = 3,
-        GRAY8 = 8,
-        BGRA = 28
+        Bgr24 = 3,
+        Gray8 = 8,
+        Bgra = 28
     }
 
     static class FFmpegVideoPInvoke

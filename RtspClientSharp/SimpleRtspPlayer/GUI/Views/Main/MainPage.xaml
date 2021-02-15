@@ -1,0 +1,34 @@
+﻿<Page x:Class="SimpleRtspPlayer.GUI.Views.Main.MainPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:SimpleRtspPlayer.GUI.Views.Connect"
+      mc:Ignorable="d" 
+      d:DesignHeight="380" d:DesignWidth="600"
+      Title="MainPage">
+
+	<Grid x:Name="MainGrid">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="19*"/>
+			<RowDefinition Height="45*"/>
+			<RowDefinition Height="43*"/>
+			<RowDefinition Height="51*"/>
+			<RowDefinition Height="126*"/>
+			<RowDefinition Height="48*"/>
+			<RowDefinition Height="30*"/>
+			<RowDefinition Height="18*"/>
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="30*"/>
+			<ColumnDefinition Width="81*"/>
+			<ColumnDefinition Width="380*"/>
+			<ColumnDefinition Width="79*"/>
+			<ColumnDefinition Width="30*"/>
+		</Grid.ColumnDefinitions>
+		<Rectangle Fill="#FFF4F4F5" Stroke="Black" RadiusY="21.9" RadiusX="21.9" Grid.ColumnSpan="4" Margin="30,19,0.4,0.4" Grid.RowSpan="7" />
+		<Label x:Name="EnterName" Content="Please enter your nickname:" Grid.Column="2" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" FontSize="30" Height="50"/>
+		<TextBox x:Name="UserNameText" Grid.Column="2" Template="{StaticResource TextBoxRoundTemplate}" Grid.Row="3" TextWrapping="Wrap" Text="Your Nickname" FontSize="30" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" TabIndex="15" KeyUp="UserName_KeyUp" TextChanged="UserNameText_TextChanged"/>
+		<Button x:Name="ButtonConfirm" Content="Confirm" Style="{StaticResource RoundSelected}" Grid.Row="5" FontSize="25" Click="Button_Click" IsEnabled="False" Grid.Column="2"/>
+	</Grid>
+</Page>

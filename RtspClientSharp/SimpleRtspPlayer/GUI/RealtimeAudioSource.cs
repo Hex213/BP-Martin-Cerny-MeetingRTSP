@@ -69,7 +69,7 @@ namespace SimpleRtspPlayer.GUI
         private FFmpegAudioCodecId DetectCodecId(RawAudioFrame audioFrame)
         {
             if (audioFrame is RawAACFrame)
-                return FFmpegAudioCodecId.AAC;
+                return FFmpegAudioCodecId.Aac;
             if (audioFrame is RawG711AFrame)
                 return FFmpegAudioCodecId.G711A;
             if (audioFrame is RawG711UFrame)

@@ -59,5 +59,43 @@ namespace SimpleRtspPlayer.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connect to existing meeting.
+        /// </summary>
+        internal static string butConnect {
+            get {
+                return ResourceManager.GetString("butConnect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Host meeting.
+        /// </summary>
+        internal static string butCreate {
+            get {
+                return ResourceManager.GetString("butCreate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ConnectImg {
+            get {
+                object obj = ResourceManager.GetObject("ConnectImg", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap CreateImg {
+            get {
+                object obj = ResourceManager.GetObject("CreateImg", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }

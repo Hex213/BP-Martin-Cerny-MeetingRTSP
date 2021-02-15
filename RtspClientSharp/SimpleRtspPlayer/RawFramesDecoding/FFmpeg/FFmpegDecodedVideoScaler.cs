@@ -123,11 +123,11 @@ namespace SimpleRtspPlayer.RawFramesDecoding.FFmpeg
         private static FFmpegPixelFormat GetFFmpegPixelFormat(PixelFormat pixelFormat)
         {
             if (pixelFormat == PixelFormat.Bgra32)
-                return FFmpegPixelFormat.BGRA;
+                return FFmpegPixelFormat.Bgra;
             if (pixelFormat == PixelFormat.Grayscale)
-                return FFmpegPixelFormat.GRAY8;
+                return FFmpegPixelFormat.Gray8;
             if (pixelFormat == PixelFormat.Bgr24)
-                return FFmpegPixelFormat.BGR24;
+                return FFmpegPixelFormat.Bgr24;
 
             throw new ArgumentOutOfRangeException(nameof(pixelFormat));
         }

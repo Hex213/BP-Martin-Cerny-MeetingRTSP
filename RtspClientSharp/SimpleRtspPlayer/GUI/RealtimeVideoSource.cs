@@ -74,7 +74,7 @@ namespace SimpleRtspPlayer.GUI
         private FFmpegVideoCodecId DetectCodecId(RawVideoFrame videoFrame)
         {
             if (videoFrame is RawJpegFrame)
-                return FFmpegVideoCodecId.MJPEG;
+                return FFmpegVideoCodecId.Mjpeg;
             if (videoFrame is RawH264Frame)
                 return FFmpegVideoCodecId.H264;
 

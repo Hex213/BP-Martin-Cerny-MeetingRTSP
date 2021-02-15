@@ -6,28 +6,20 @@ using System.Windows;
 using GalaSoft.MvvmLight.Command;
 using RtspClientSharp;
 using SimpleRtspPlayer.GUI.Models;
+using SimpleRtspPlayer.Hex.Connect;
+using SimpleRtspPlayer.Hex.Globals;
+using SimpleRtspPlayer.Hex.GUI;
 
 namespace SimpleRtspPlayer.GUI.ViewModels
 {
-    class MainWindowViewModel : INotifyPropertyChanged
+    public class MainWindowViewModel : INotifyPropertyChanged
     {
-        private const string RtspPrefix = "rtsp://";
-        private const string HttpPrefix = "http://";
-
+        private bool _onceStart = false;
         private string _status = string.Empty;
         private readonly IMainWindowModel _mainWindowModel;
-        private bool _startButtonEnabled = true;
-        private bool _stopButtonEnabled;
-
-        public string DeviceAddress { get; set; } = "rtsp://127.0.0.1:8554/live";
-
-        public string Login { get; set; } = "admin";
-        public string Password { get; set; } = "123456";
 
         public IVideoSource VideoSource => _mainWindowModel.VideoSource;
-
-        public RelayCommand StartClickCommand { get; }
-        public RelayCommand StopClickCommand { get; }
+        
         public RelayCommand<CancelEventArgs> ClosingCommand { get; }
 
         public string Status
@@ -46,56 +38,30 @@ namespace SimpleRtspPlayer.GUI.ViewModels
         {
             _mainWindowModel = mainWindowModel ?? throw new ArgumentNullException(nameof(mainWindowModel));
             
-            StartClickCommand = new RelayCommand(OnStartButtonClick, () => _startButtonEnabled);
-            StopClickCommand = new RelayCommand(OnStopButtonClick, () => _stopButtonEnabled);
             ClosingCommand = new RelayCommand<CancelEventArgs>(OnClosing);
+
+            HexWpfContextController.SetUpPlayer(this, _mainWindowModel);
+        }
+
+        public void StartPlayer()
+        {
+            _mainWindowModel.Start(HexNetworkConnect.GetConnectionParameters(_onceStart));
+            _mainWindowModel.StatusChanged += MainWindowModelOnStatusChanged;
+
+            _onceStart = true;
+        }
+
+        public void StopPlayer()
+        {
+            _mainWindowModel.Stop();
+            _mainWindowModel.StatusChanged -= MainWindowModelOnStatusChanged;
+            
+            Status = string.Empty;
         }
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        private void OnStartButtonClick()
-        {
-            string address = DeviceAddress;
-
-            if (!address.StartsWith(RtspPrefix) && !address.StartsWith(HttpPrefix))
-                address = RtspPrefix + address;
-
-            if (!Uri.TryCreate(address, UriKind.Absolute, out Uri deviceUri))
-            {
-                MessageBox.Show("Invalid device address", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            var credential = new NetworkCredential(Login, Password);
-
-            var connectionParameters = !string.IsNullOrEmpty(deviceUri.UserInfo) ? new ConnectionParameters(deviceUri) : 
-                new ConnectionParameters(deviceUri, credential);
-
-            connectionParameters.RtpTransport = RtpTransportProtocol.UDP;
-            connectionParameters.CancelTimeout = TimeSpan.FromSeconds(1);
-
-            _mainWindowModel.Start(connectionParameters);
-            _mainWindowModel.StatusChanged += MainWindowModelOnStatusChanged;
-
-            _startButtonEnabled = false;
-            StartClickCommand.RaiseCanExecuteChanged();
-            _stopButtonEnabled = true;
-            StopClickCommand.RaiseCanExecuteChanged();
-        }
-
-        private void OnStopButtonClick()
-        {
-            _mainWindowModel.Stop();
-            _mainWindowModel.StatusChanged -= MainWindowModelOnStatusChanged;
-
-            _stopButtonEnabled = false;
-            StopClickCommand.RaiseCanExecuteChanged();
-            _startButtonEnabled = true;
-            StartClickCommand.RaiseCanExecuteChanged();
-            Status = string.Empty;
         }
 
         private void MainWindowModelOnStatusChanged(object sender, string s)
@@ -105,7 +71,7 @@ namespace SimpleRtspPlayer.GUI.ViewModels
 
         private void OnClosing(CancelEventArgs args)
         {
-            _mainWindowModel.Stop();
+            StopPlayer();
         }
     }
 }

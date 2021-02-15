@@ -25,8 +25,27 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="GUI\WPF\Connect\Connect_1.xaml.cs" />
+    <Compile Remove="GUI\WPF\Connect\Connect_2.xaml.cs" />
+    <Compile Remove="GUI\WPF\Connect\Connect_3.xaml.cs" />
+    <Compile Remove="GUI\WPF\Connect\Connect_Wait.xaml.cs" />
+    <Compile Remove="GUI\WPF\Connect\MainWindow.xaml.cs" />
+    <Compile Remove="GUI\WPF\Connect\MainWindowViewModel.cs" />
+    <Compile Remove="GUI\WPF\Connect\VideoView.xaml.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Resources\ConnectImg.png" />
     <None Remove="Resources\CreateImg.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Remove="GUI\WPF\Connect\Connect_1.xaml" />
+    <Page Remove="GUI\WPF\Connect\Connect_2.xaml" />
+    <Page Remove="GUI\WPF\Connect\Connect_3.xaml" />
+    <Page Remove="GUI\WPF\Connect\Connect_Wait.xaml" />
+    <Page Remove="GUI\WPF\Connect\MainWindow.xaml" />
+    <Page Remove="GUI\WPF\Connect\VideoView.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -80,6 +99,7 @@
 
   <ItemGroup>
     <Folder Include="Engine\Models\" />
+    <Folder Include="GUI\WPF\Connect\" />
   </ItemGroup>
 
   <ItemGroup>
