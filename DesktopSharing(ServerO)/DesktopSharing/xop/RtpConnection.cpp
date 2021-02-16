@@ -230,7 +230,7 @@ void RtpConnection::SetRtpHeader(MediaChannelId channel_id, RtpPacket pkt)
 }
 
 int RtpConnection::SendRtpPacket(MediaChannelId channel_id, RtpPacket pkt)
-{    
+{    //TODO: add crypto (two func down)
 	if (is_closed_) {
 		return -1;
 	}
@@ -266,6 +266,7 @@ int RtpConnection::SendRtpOverTcp(MediaChannelId channel_id, RtpPacket pkt)
 		return -1;
 	}
 
+	//Format paket
 	uint8_t* rtpPktPtr = pkt.data.get();
 	rtpPktPtr[0] = '$';
 	rtpPktPtr[1] = (char)media_channel_info_[channel_id].rtp_channel;
