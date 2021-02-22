@@ -9,7 +9,7 @@ using LibHexCrypto.Hashs;
 
 namespace LibHexCrypto.Algoritm
 {
-    public static class AES
+    public static class AesGcmOne
     {
         public static string Encrypt(string plain, string key, ushort bitLength, out Span<byte> nonceIV)
         {
