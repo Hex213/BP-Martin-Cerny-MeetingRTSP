@@ -45,6 +45,7 @@ void TcpConnection::Send(std::shared_ptr<char> data, uint32_t size)
 
 void TcpConnection::Send(const char *data, uint32_t size)
 {
+	//TODO: or here encrypt
 	if (!is_closed_) {
 		mutex_.lock();
 		write_buffer_->Append(data, size);
