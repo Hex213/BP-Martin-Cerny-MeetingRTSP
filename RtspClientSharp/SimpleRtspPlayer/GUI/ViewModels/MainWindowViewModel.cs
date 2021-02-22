@@ -7,8 +7,8 @@ using GalaSoft.MvvmLight.Command;
 using RtspClientSharp;
 using SimpleRtspPlayer.GUI.Models;
 using SimpleRtspPlayer.Hex.Connect;
+using SimpleRtspPlayer.Hex.Engine.GUI;
 using SimpleRtspPlayer.Hex.Globals;
-using SimpleRtspPlayer.Hex.GUI;
 
 namespace SimpleRtspPlayer.GUI.ViewModels
 {

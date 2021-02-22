@@ -8,8 +8,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using SimpleRtspPlayer.Hex.Connect;
+using SimpleRtspPlayer.Hex.Engine.GUI;
 using SimpleRtspPlayer.Hex.Globals;
-using SimpleRtspPlayer.Hex.GUI;
 
 namespace SimpleRtspPlayer.GUI.Views.Connect
 {

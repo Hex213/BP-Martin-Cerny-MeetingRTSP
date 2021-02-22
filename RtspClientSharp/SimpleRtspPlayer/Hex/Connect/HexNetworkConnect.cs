@@ -8,8 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using RtspClientSharp;
+using SimpleRtspPlayer.Hex.Engine.GUI.Exceptions;
 using SimpleRtspPlayer.Hex.Globals;
-using SimpleRtspPlayer.Hex.GUI.Exceptions;
 using SimpleRtspPlayer.Properties;
 using static SimpleRtspPlayer.Hex.Connect.Check;
 

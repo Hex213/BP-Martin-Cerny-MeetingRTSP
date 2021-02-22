@@ -485,6 +485,7 @@ namespace RtspClientSharp.Rtsp
             }
         }
 
+        //TODO: find RICEVE
         private async Task ReceiveOverTcpAsync(Stream rtspStream, CancellationToken token)
         {
             _tpktStream = new TpktStream(rtspStream);
@@ -546,6 +547,7 @@ namespace RtspClientSharp.Rtsp
             return Task.WhenAll(waitList);
         }
 
+        //Data
         private async Task ReceiveRtpFromUdpAsync(Socket client, RtpStream rtpStream,
             RtcpReceiverReportsProvider reportsProvider,
             CancellationToken token)
@@ -559,6 +561,7 @@ namespace RtspClientSharp.Rtsp
 
             while (!token.IsCancellationRequested)
             {
+                //TODO: UDP DATA
                 int read = await client.ReceiveAsync(bufferSegment, SocketFlags.None);
 
                 var payloadSegment = new ArraySegment<byte>(readBuffer, 0, read);
@@ -578,6 +581,7 @@ namespace RtspClientSharp.Rtsp
             }
         }
 
+        //control protocol = setup
         private static async Task ReceiveRtcpFromUdpAsync(Socket client, ITransportStream stream,
             CancellationToken token)
         {
@@ -586,6 +590,7 @@ namespace RtspClientSharp.Rtsp
 
             while (!token.IsCancellationRequested)
             {
+                //TODO: UDP CONTROL
                 int read = await client.ReceiveAsync(bufferSegment, SocketFlags.None);
 
                 var payloadSegment = new ArraySegment<byte>(readBuffer, 0, read);

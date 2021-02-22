@@ -171,11 +171,11 @@
     <Compile Include="Hex\Engine\HSHA1.cs" />
     <Compile Include="Hex\Globals\Globals.cs" />
     <Compile Include="Hex\Globals\NetworkGlobal.cs" />
-    <Compile Include="Hex\GUI\Exceptions\ControllerInitException.cs" />
-    <Compile Include="Hex\GUI\Exceptions\ErrorCode.cs" />
-    <Compile Include="Hex\GUI\Exceptions\NetworkControllerException.cs" />
-    <Compile Include="Hex\GUI\HexWPFContextController.cs" />
-    <Compile Include="Hex\GUI\IWPFwindow.cs" />
+    <Compile Include="Hex\Engine\GUI\Exceptions\ControllerInitException.cs" />
+    <Compile Include="Hex\Engine\GUI\Exceptions\ErrorCode.cs" />
+    <Compile Include="Hex\Engine\GUI\Exceptions\NetworkControllerException.cs" />
+    <Compile Include="Hex\Engine\GUI\HexWPFContextController.cs" />
+    <Compile Include="Hex\Engine\GUI\IWPFwindow.cs" />
     <Compile Include="RawFramesDecoding\DecodedFrames\DecodedAudioFrame.cs" />
     <Compile Include="RawFramesDecoding\DecodedFrames\DecodedVideoFrame.cs" />
     <Compile Include="RawFramesDecoding\DecodedFrames\IDecodedAudioFrame.cs" />
@@ -295,6 +295,9 @@
     <Content Include="x64\avfilter-7.dll" />
     <Content Include="x64\avformat-58.dll" />
     <Content Include="x64\avutil-56.dll" />
+    <Content Include="x64\libffmpeghelper.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="x64\postproc-55.dll" />
     <Content Include="x64\swresample-3.dll" />
     <Content Include="x64\swscale-5.dll" />

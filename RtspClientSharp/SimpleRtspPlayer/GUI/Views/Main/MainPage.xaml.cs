@@ -1,8 +1,8 @@
 ﻿using System.Text.RegularExpressions;
 using System.Windows.Controls;
 using SimpleRtspPlayer.Hex.Connect;
+using SimpleRtspPlayer.Hex.Engine.GUI;
 using SimpleRtspPlayer.Hex.Globals;
-using SimpleRtspPlayer.Hex.GUI;
 
 namespace SimpleRtspPlayer.GUI.Views.Main
 {

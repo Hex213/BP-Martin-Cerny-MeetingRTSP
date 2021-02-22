@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MeetingPlayerRepair": {
+      "commandName": "Project",
+      "commandLineArgs": "-o"
+    }
+  }
+}
