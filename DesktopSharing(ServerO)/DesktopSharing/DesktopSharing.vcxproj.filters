@@ -1,0 +1,793 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="src\xop">
+      <UniqueIdentifier>{6574fa59-78fc-4101-8309-916283e7c698}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\net">
+      <UniqueIdentifier>{7e8e052b-16fb-483a-b622-eb08a34f8097}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\md5">
+      <UniqueIdentifier>{6f86d385-535f-48be-9e29-2a2b6cd33f39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\imgui">
+      <UniqueIdentifier>{fc15b1c2-2ddc-4d3e-8a53-60d09c9fe2d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\imgui\GL">
+      <UniqueIdentifier>{e59cb818-768f-489d-a4b7-f0e1891ca409}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\libyuv">
+      <UniqueIdentifier>{562e1810-42e8-4c8d-8037-e3673d1b4608}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\libyuv\source">
+      <UniqueIdentifier>{5e9d5d14-477c-431c-8a48-6d692548f3fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\libyuv\include">
+      <UniqueIdentifier>{c218d111-7861-491d-ada4-ab2323859e15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\codec">
+      <UniqueIdentifier>{2b2853c2-f9ea-4bb8-b06f-79a91a7c1bdc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\codec\avcodec">
+      <UniqueIdentifier>{0a24de64-2bf4-4c54-a101-c8c6bd67dc81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\codec\nvcodec">
+      <UniqueIdentifier>{974f461a-52e5-4a02-ba20-89861f9c7811}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\codec\nvcodec\NvEncoder">
+      <UniqueIdentifier>{b590e5bb-a407-4758-8729-85f0fd1f7209}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\codec\qsvcodec">
+      <UniqueIdentifier>{0f20fbbc-669b-4f06-af52-ac5d7c8a19f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\codec\qsvcodec\src">
+      <UniqueIdentifier>{b5abc978-c2c9-43d1-bdb8-3aeafa1ca617}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\capture">
+      <UniqueIdentifier>{8b96442d-e7e2-411a-a34d-4e78cc43e4fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\capture\ScreenCpature">
+      <UniqueIdentifier>{e34c8d3d-181e-4ed6-b18a-020b36451ee8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\capture\AudioCapture">
+      <UniqueIdentifier>{30c25f44-00c1-402d-a57c-9279e6fa7497}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="csrc">
+      <UniqueIdentifier>{29fd7463-869b-41ef-8bd7-9af0981f4ba5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="net\Acceptor.cpp">
+      <Filter>src\net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\BufferReader.cpp">
+      <Filter>src\net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\BufferWriter.cpp">
+      <Filter>src\net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\EpollTaskScheduler.cpp">
+      <Filter>src\net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\EventLoop.cpp">
+      <Filter>src\net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\Logger.cpp">
+      <Filter>src\net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\MemoryManager.cpp">
+      <Filter>src\net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\NetInterface.cpp">
+      <Filter>src\net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\Pipe.cpp">
+      <Filter>src\net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\SelectTaskScheduler.cpp">
+      <Filter>src\net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\SocketUtil.cpp">
+      <Filter>src\net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\TaskScheduler.cpp">
+      <Filter>src\net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\TcpConnection.cpp">
+      <Filter>src\net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\TcpServer.cpp">
+      <Filter>src\net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\TcpSocket.cpp">
+      <Filter>src\net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\Timer.cpp">
+      <Filter>src\net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\Timestamp.cpp">
+      <Filter>src\net</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\AACSource.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\G711ASource.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\H264Parser.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\H264Source.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\H265Source.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\MediaSession.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\RtpConnection.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\RtspConnection.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\RtspMessage.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\RtspPusher.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\RtspServer.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\amf.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\RtmpConnection.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\RtmpPublisher.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\RtmpServer.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\RtmpSession.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\HttpFlvConnection.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\HttpFlvServer.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\DigestAuthentication.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="ScreenLive.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\RtmpClient.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\RtmpChunk.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="xop\RtmpHandshake.cpp">
+      <Filter>src\xop</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui.cpp">
+      <Filter>src\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_dx9.cpp">
+      <Filter>src\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_sdl.cpp">
+      <Filter>src\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_win32.cpp">
+      <Filter>src\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_widgets.cpp">
+      <Filter>src\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_draw.cpp">
+      <Filter>src\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="MainWindow.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Overlay.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\compare.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\compare_common.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\compare_gcc.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\compare_mmi.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\compare_msa.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\compare_neon.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\compare_neon64.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\compare_win.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\convert.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\convert_argb.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\convert_from.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\convert_from_argb.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\convert_jpeg.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\convert_to_argb.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\convert_to_i420.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\cpu_id.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\mjpeg_decoder.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\mjpeg_validate.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\planar_functions.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\rotate.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\rotate_any.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\rotate_argb.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\rotate_common.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\rotate_gcc.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\rotate_mmi.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\rotate_msa.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\rotate_neon.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\rotate_neon64.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\rotate_win.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\row_any.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\row_common.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\row_gcc.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\row_mmi.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\row_msa.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\row_neon.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\row_neon64.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\row_win.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\scale.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\scale_any.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\scale_argb.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\scale_common.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\scale_gcc.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\scale_mmi.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\scale_msa.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\scale_neon.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\scale_neon64.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\scale_win.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="libyuv\source\video_common.cc">
+      <Filter>src\libyuv\source</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_opengl2.cpp">
+      <Filter>src\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_demo.cpp">
+      <Filter>src\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_opengl3.cpp">
+      <Filter>src\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\gl3w\GL\gl3w.c">
+      <Filter>src\imgui\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\avcodec\aac_encoder.cpp">
+      <Filter>src\codec\avcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\avcodec\h264_encoder.cpp">
+      <Filter>src\codec\avcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\avcodec\video_converter.cpp">
+      <Filter>src\codec\avcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\NvCodec\NvEncoder\NvEncoder.cpp">
+      <Filter>src\codec\nvcodec\NvEncoder</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\NvCodec\NvEncoder\NvEncoderD3D11.cpp">
+      <Filter>src\codec\nvcodec\NvEncoder</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\NvCodec\nvenc.cpp">
+      <Filter>src\codec\nvcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\QsvCodec\src\mfx_critical_section.cpp">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\QsvCodec\src\mfx_dispatcher.cpp">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\QsvCodec\src\mfx_dispatcher_log.cpp">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\QsvCodec\src\mfx_dxva2_device.cpp">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\QsvCodec\src\mfx_function_table.cpp">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\QsvCodec\src\mfx_library_iterator.cpp">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\QsvCodec\src\mfx_load_dll.cpp">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\QsvCodec\src\mfx_load_plugin.cpp">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\QsvCodec\src\mfx_plugin_hive.cpp">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\QsvCodec\src\mfx_win_reg_key.cpp">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\QsvCodec\src\qsv_main.cpp">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\QsvCodec\common_directx9.cpp">
+      <Filter>src\codec\qsvcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\QsvCodec\common_directx11.cpp">
+      <Filter>src\codec\qsvcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\QsvCodec\common_utils.cpp">
+      <Filter>src\codec\qsvcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\QsvCodec\common_utils_windows.cpp">
+      <Filter>src\codec\qsvcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\QsvCodec\QsvEncoder.cpp">
+      <Filter>src\codec\qsvcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="capture\ScreenCapture\DXGIScreenCapture.cpp">
+      <Filter>src\capture\ScreenCpature</Filter>
+    </ClCompile>
+    <ClCompile Include="capture\ScreenCapture\GDIScreenCapture.cpp">
+      <Filter>src\capture\ScreenCpature</Filter>
+    </ClCompile>
+    <ClCompile Include="capture\ScreenCapture\ScreenCapture.cpp">
+      <Filter>src\capture\ScreenCpature</Filter>
+    </ClCompile>
+    <ClCompile Include="capture\ScreenCapture\WindowHelper.cpp">
+      <Filter>src\capture\ScreenCpature</Filter>
+    </ClCompile>
+    <ClCompile Include="capture\AudioCapture\AudioCapture.cpp">
+      <Filter>src\capture\AudioCapture</Filter>
+    </ClCompile>
+    <ClCompile Include="capture\AudioCapture\WASAPICapture.cpp">
+      <Filter>src\capture\AudioCapture</Filter>
+    </ClCompile>
+    <ClCompile Include="capture\AudioCapture\WASAPIPlayer.cpp">
+      <Filter>src\capture\AudioCapture</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\AACEncoder.cpp">
+      <Filter>src\codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\H264Encoder.cpp">
+      <Filter>src\codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\avcodec\audio_resampler.cpp">
+      <Filter>src\codec\avcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="csrc\hd_client.c">
+      <Filter>csrc</Filter>
+    </ClCompile>
+    <ClCompile Include="csrc\getopt.c">
+      <Filter>csrc</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="net\Acceptor.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\BufferReader.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\BufferWriter.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\Channel.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\EpollTaskScheduler.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\EventLoop.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\log.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\Logger.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\MemoryManager.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\NetInterface.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\Pipe.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\RingBuffer.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\SelectTaskScheduler.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\Socket.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\SocketUtil.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\TaskScheduler.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\TcpConnection.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\TcpServer.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\TcpSocket.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\ThreadSafeQueue.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\Timer.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\Timestamp.h">
+      <Filter>src\net</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\AACSource.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\G711ASource.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\H264Parser.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\H264Source.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\H265Source.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\media.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\MediaSession.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\MediaSource.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\rtp.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\RtpConnection.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\rtsp.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\RtspConnection.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\RtspMessage.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\RtspPusher.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\RtspServer.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\amf.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\rtmp.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\RtmpConnection.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\RtmpPublisher.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\RtmpServer.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\RtmpSession.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\HttpFlvConnection.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\HttpFlvServer.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\DigestAuthentication.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="md5\md5.hpp">
+      <Filter>src\md5</Filter>
+    </ClInclude>
+    <ClInclude Include="ScreenLive.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\RtmpClient.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\RtmpChunk.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\RtmpMessage.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="xop\RtmpHandshake.h">
+      <Filter>src\xop</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imconfig.h">
+      <Filter>src\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui.h">
+      <Filter>src\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_dx9.h">
+      <Filter>src\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_sdl.h">
+      <Filter>src\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_win32.h">
+      <Filter>src\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_internal.h">
+      <Filter>src\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_rectpack.h">
+      <Filter>src\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_textedit.h">
+      <Filter>src\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_truetype.h">
+      <Filter>src\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="MainWindow.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Overlay.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="libyuv\include\libyuv.h">
+      <Filter>src\libyuv\include</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_opengl2.h">
+      <Filter>src\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_opengl3.h">
+      <Filter>src\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\gl3w\GL\gl3w.h">
+      <Filter>src\imgui\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\gl3w\GL\glcorearb.h">
+      <Filter>src\imgui\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\avcodec\aac_encoder.h">
+      <Filter>src\codec\avcodec</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\avcodec\av_common.h">
+      <Filter>src\codec\avcodec</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\avcodec\av_encoder.h">
+      <Filter>src\codec\avcodec</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\avcodec\h264_encoder.h">
+      <Filter>src\codec\avcodec</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\avcodec\video_converter.h">
+      <Filter>src\codec\avcodec</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\NvCodec\NvEncoder\nvEncodeAPI.h">
+      <Filter>src\codec\nvcodec\NvEncoder</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\NvCodec\NvEncoder\NvEncoder.h">
+      <Filter>src\codec\nvcodec\NvEncoder</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\NvCodec\NvEncoder\NvEncoderD3D11.h">
+      <Filter>src\codec\nvcodec\NvEncoder</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\NvCodec\encoder_info.h">
+      <Filter>src\codec\nvcodec</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\NvCodec\nvenc.h">
+      <Filter>src\codec\nvcodec</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\QsvCodec\src\mfx_critical_section.h">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\QsvCodec\src\mfx_dispatcher.h">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\QsvCodec\src\mfx_dispatcher_defs.h">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\QsvCodec\src\mfx_dispatcher_log.h">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\QsvCodec\src\mfx_dxva2_device.h">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\QsvCodec\src\mfx_exposed_functions_list.h">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\QsvCodec\src\mfx_library_iterator.h">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\QsvCodec\src\mfx_load_dll.h">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\QsvCodec\src\mfx_load_plugin.h">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\QsvCodec\src\mfx_plugin_hive.h">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\QsvCodec\src\mfx_vector.h">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\QsvCodec\src\mfx_win_reg_key.h">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\QsvCodec\src\mfxaudio_exposed_functions_list.h">
+      <Filter>src\codec\qsvcodec\src</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\QsvCodec\common_directx9.h">
+      <Filter>src\codec\qsvcodec</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\QsvCodec\common_directx11.h">
+      <Filter>src\codec\qsvcodec</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\QsvCodec\common_utils.h">
+      <Filter>src\codec\qsvcodec</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\QsvCodec\QsvEncoder.h">
+      <Filter>src\codec\qsvcodec</Filter>
+    </ClInclude>
+    <ClInclude Include="capture\ScreenCapture\DXGIScreenCapture.h">
+      <Filter>src\capture\ScreenCpature</Filter>
+    </ClInclude>
+    <ClInclude Include="capture\ScreenCapture\GDIScreenCapture.h">
+      <Filter>src\capture\ScreenCpature</Filter>
+    </ClInclude>
+    <ClInclude Include="capture\ScreenCapture\ScreenCapture.h">
+      <Filter>src\capture\ScreenCpature</Filter>
+    </ClInclude>
+    <ClInclude Include="capture\ScreenCapture\WindowHelper.h">
+      <Filter>src\capture\ScreenCpature</Filter>
+    </ClInclude>
+    <ClInclude Include="capture\AudioCapture\AudioBuffer.h">
+      <Filter>src\capture\AudioCapture</Filter>
+    </ClInclude>
+    <ClInclude Include="capture\AudioCapture\AudioCapture.h">
+      <Filter>src\capture\AudioCapture</Filter>
+    </ClInclude>
+    <ClInclude Include="capture\AudioCapture\WASAPICapture.h">
+      <Filter>src\capture\AudioCapture</Filter>
+    </ClInclude>
+    <ClInclude Include="capture\AudioCapture\WASAPIPlayer.h">
+      <Filter>src\capture\AudioCapture</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\AACEncoder.h">
+      <Filter>src\codec</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\H264Encoder.h">
+      <Filter>src\codec</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\avcodec\audio_resampler.h">
+      <Filter>src\codec\avcodec</Filter>
+    </ClInclude>
+    <ClInclude Include="csrc\getopt.h">
+      <Filter>csrc</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
