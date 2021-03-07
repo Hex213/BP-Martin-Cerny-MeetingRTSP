@@ -5,9 +5,18 @@
     <TargetFramework>net5.0</TargetFramework>
     <SignAssembly>false</SignAssembly>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>AnyCPU;x86;x64</Platforms>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\RtspClientSharp\SimpleRtspPlayer\bin\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutputPath>D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\RtspClientSharp\SimpleRtspPlayer\bin\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <OutputPath>D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\RtspClientSharp\SimpleRtspPlayer\bin\</OutputPath>
   </PropertyGroup>
 

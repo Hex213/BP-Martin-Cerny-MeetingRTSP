@@ -3,8 +3,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using LibRtspClientSharp.Hex;
 using RtspClientSharp.Utils;
 
 namespace RtspClientSharp.Rtsp
@@ -53,9 +55,18 @@ namespace RtspClientSharp.Rtsp
             _tcpClient?.Close();
         }
 
+        //TODO: sending
         protected override Task WriteAsync(byte[] buffer, int offset, int count)
         {
             Debug.Assert(_networkStream != null, "_networkStream != null");
+            if(Global.strictPrint)
+            {
+                Console.WriteLine("Send(" + count + "):" + Encoding.UTF8.GetString(buffer, offset, count));
+            }
+            else
+            {
+                Console.WriteLine("Send(" + count + ")");
+            }
             return _networkStream.WriteAsync(buffer, offset, count);
         }
 

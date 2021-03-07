@@ -8,6 +8,8 @@
 #include <memory>
 #include <queue>
 #include <string>
+
+#include "HexPacket.h"
 #include "Socket.h"
 
 namespace xop
@@ -47,7 +49,8 @@ private:
 		uint32_t writeIndex;
 	} Packet;
 
-	std::shared_ptr<std::queue<Packet>> buffer_;  		
+	std::shared_ptr<std::queue<Packet>> buffer_;
+	std::shared_ptr<std::queue<HexPacket>> bufferEncryp_;
 	int max_queue_length_ = 0;
 	 
 	static const int kMaxQueueLength = 10000;

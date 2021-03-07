@@ -8,7 +8,7 @@
 #include "net/SocketUtil.h"
 
 #define USER_AGENT "-_-"
-#define RTSP_DEBUG 1
+#define RTSP_DEBUG 0
 #define MAX_RTSP_MESSAGE_SIZE 2048
 
 using namespace xop;

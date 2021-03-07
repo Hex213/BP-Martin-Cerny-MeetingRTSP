@@ -1,9 +1,15 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using LibHexCryptoStandard.Algoritm;
+using LibHexCryptoStandard.Packet;
+using LibRtspClientSharp.Hex;
 using RtspClientSharp.Rtsp.Authentication;
 using RtspClientSharp.Utils;
 
@@ -80,6 +86,7 @@ namespace RtspClientSharp.Rtsp
 
             string requestMessageString = requestMessage.ToString();
 
+            //TODO: pozri to tu tiez
             int written = Encoding.ASCII.GetBytes(requestMessageString, 0, requestMessageString.Length, _buffer, 0);
             return WriteAsync(_buffer, 0, written);
         }
@@ -89,7 +96,7 @@ namespace RtspClientSharp.Rtsp
         protected abstract Task WriteAsync(byte[] buffer, int offset, int count);
         protected abstract Task<int> ReadAsync(byte[] buffer, int offset, int count);
         protected abstract Task ReadExactAsync(byte[] buffer, int offset, int count);
-
+        
         private async Task<RtspResponseMessage> GetResponseAsync(int responseReadPortionSize = 0)
         {
             int totalRead = await ReadUntilEndOfHeadersAsync(responseReadPortionSize);
@@ -132,9 +139,31 @@ namespace RtspClientSharp.Rtsp
             return rtspResponseMessage;
         }
 
+        //switch decrypt --------------------------------------------------------------------------
+        private ushort len_bytes = 4;
+        
+        private void correctRead(ref int read, ref int totalRead, ref int offset, in int decrypted)
+        {
+            if(read > 1)
+            {
+                totalRead -= read;
+                read = decrypted;
+                totalRead += read;
+            }
+            else
+            {
+                read = decrypted;
+                totalRead = read;
+                offset = totalRead;
+            }
+        }
+
         private async Task<int> ReadUntilEndOfHeadersAsync(int readPortionSize = 0)
         {
             int offset = 0;
+
+            bool readNew = true;
+            uint readNeeded = 0;
 
             int endOfHeaders;
             int totalRead = 0;
@@ -149,25 +178,83 @@ namespace RtspClientSharp.Rtsp
                 if (count == 0)
                     throw new RtspBadResponseException(
                         $"Response is too large (> {Constants.MaxResponseHeadersSize / 1024} KB)");
-
+                
                 int read = await ReadAsync(_buffer, offset, count);
 
+                //kontrola existencie streamu
                 if (read == 0)
                     throw new EndOfStreamException("End of rtsp stream");
 
                 totalRead += read;
 
-                int startIndex = offset - (Constants.DoubleCrlfBytes.Length - 1);
+                //Vypis prijatych dat
+                if(ConnectionParameters.UseBase64 && Global.strictPrint)
+                {
+                    Console.WriteLine("Recv(" + read + "):" + Encoding.UTF8.GetString(_buffer, offset, count));
+                }
+                else
+                {
+                    Console.WriteLine("Recv(" + read + ")");
+                }
+
+                //Ziskanie Hpaketu
+                if ((read > 8 || totalRead >= 8) && readNew && ConnectionParameters.Enryption)
+                {
+                    //TODO: check if is first 4 null
+                    byte[] lenBytes = new byte[4];
+                    lenBytes = _buffer.Skip(4).Take(len_bytes).ToArray();
+                    readNeeded = BitConverter.ToUInt32(lenBytes, 0);
+
+                    readNew = false;
+                }
+
+                var pktSize = totalRead - 4 - len_bytes;
+
+                //Desifrovanie
+                if ((pktSize == readNeeded/* || totalRead == readNeeded*/) && ConnectionParameters.Enryption && !readNew)
+                {
+                    Console.WriteLine("RecvTotal(" + pktSize + ")");
+
+                    byte[] toDecrypt = new byte[totalRead];
+                    Buffer.BlockCopy(_buffer, 0, toDecrypt, 0, totalRead);
+                    HexPacket hexPacket = new HexPacket(toDecrypt, ConnectionParameters.UseBase64);
+
+                    //TODO: zmensit kod
+                    if (ConnectionParameters.UseBase64)
+                    {//USE BASE 64 decryption
+                        string decrypted = (string)hexPacket.Decrypt();
+                        //clear default buffer
+                        Array.Clear(_buffer, 0, totalRead);
+                        //convert to byte array
+                        var tmp = Encoding.UTF8.GetBytes(decrypted);
+                        //Copy back to buffer
+                        Buffer.BlockCopy(tmp, 0, _buffer, 0, decrypted.Length);
+                        //Correct read sizes
+                        correctRead(ref read, ref totalRead, ref offset, decrypted.Length);
+                    }
+                    else //if (ConnectionParameters.UseBase64)
+                    {//USE BYTE DECRYPTION
+                        
+                        byte[] decrypted = (byte[])hexPacket.Decrypt();
+                        //clear default buffer
+                        Array.Clear(_buffer, 0, totalRead);
+                        //Copy back to buffer
+                        Buffer.BlockCopy(decrypted, 0, _buffer, 0, decrypted.Length);
+                        //Correct read sizes
+                        correctRead(ref read, ref totalRead, ref offset, decrypted.Length);
+                    }
+                }
+
+                int startIndex = offset - (Constants.DoubleCrlfBytes.Length);
 
                 if (startIndex < 0)
                     startIndex = 0;
-
+                
                 endOfHeaders = ArrayUtils.IndexOfBytes(_buffer, Constants.DoubleCrlfBytes, startIndex,
                     totalRead - startIndex);
 
                 offset += read;
             } while (endOfHeaders == -1);
-
             return totalRead;
         }
 

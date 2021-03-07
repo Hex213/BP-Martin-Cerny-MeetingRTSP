@@ -4,7 +4,8 @@
 #include "BufferReader.h"
 #include "Socket.h"
 #include <cstring>
- 
+#include <iostream>
+
 using namespace xop;
 uint32_t xop::ReadUint32BE(char* data)
 {
@@ -74,7 +75,10 @@ int BufferReader::Read(SOCKET sockfd)
 	}
 
 	int bytes_read = ::recv(sockfd, beginWrite(), MAX_BYTES_PER_READ, 0);
+
 	if(bytes_read > 0) {
+		std::string s(buffer_->data(), bytes_read);
+		std::cout << "Recv(" << bytes_read << "):" << s << std::endl;
 		writer_index_ += bytes_read;
 	}
 

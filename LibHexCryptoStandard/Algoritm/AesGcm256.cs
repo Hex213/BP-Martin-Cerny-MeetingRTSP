@@ -1,18 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Net;
+using System.Runtime.CompilerServices;
+using System.Security;
+using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 
-namespace LibHexCrypto.Algoritm
+namespace LibHexCryptoStandard.Algoritm
 {
     public class AesGcm256
     {
+        public static byte[] Key => key;
+
+        public static byte[] Iv => iv;
+
         private static readonly SecureRandom Random = new SecureRandom();
+        private static byte[] key;
+        private static byte[] iv;
 
         // Pre-configured Encryption Parameters
         public static readonly int NonceBitSize = 128;
@@ -21,6 +28,17 @@ namespace LibHexCrypto.Algoritm
 
         private AesGcm256()
         {
+        }
+
+        /// <summary>
+        /// Initialization function for encrypt/decrypt
+        /// </summary>
+        /// <param name="key">key (hexa format)</param>
+        /// <param name="iv">iv (hexa format)</param>
+        public static void init(string key, string iv)
+        {
+            AesGcm256.key = AesGcm256.HexToByte(key);
+            AesGcm256.iv = AesGcm256.HexToByte(iv);
         }
 
         public static byte[] NewKey()
@@ -105,12 +123,26 @@ namespace LibHexCrypto.Algoritm
             return sR;
         }
 
-        public static string decrypt(string EncryptedText, byte[] key, byte[] iv)
+        /// <summary>
+        /// Decrypt data with key and IV, which was set by init method<see cref=""/>. If block has non-value, then use Base64 format 
+        /// </summary>
+        /// <param name="EncryptedText">string to decrypt (for Base64 format)</param>
+        /// <param name="block">bytes to decrypt (for Byte format)</param>
+        /// <returns></returns>
+        public static Object decrypt(string EncryptedText/*, byte[] key, byte[] iv*/, byte[] block = null)
         {
             string sR = string.Empty;
             try
             {
-                byte[] encryptedBytes = Convert.FromBase64String(EncryptedText);
+                byte[] encryptedBytes;
+                if(block == null)
+                {
+                    encryptedBytes = Convert.FromBase64String(EncryptedText);
+                }
+                else
+                {
+                    encryptedBytes = block;
+                }
 
                 GcmBlockCipher cipher = new GcmBlockCipher(new AesFastEngine());
                 AeadParameters parameters =
@@ -123,7 +155,14 @@ namespace LibHexCrypto.Algoritm
                     (encryptedBytes, 0, encryptedBytes.Length, plainBytes, 0);
                 cipher.DoFinal(plainBytes, retLen);
 
-                sR = Encoding.UTF8.GetString(plainBytes).TrimEnd("\r\n\0".ToCharArray());
+                if (block == null)
+                {
+                    sR = Encoding.UTF8.GetString(plainBytes); //.TrimEnd("\r\n\0".ToCharArray());
+                }
+                else
+                {
+                    return plainBytes;
+                }
             }
             catch (Exception ex)
             {

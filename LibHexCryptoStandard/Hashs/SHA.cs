@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Org.BouncyCastle.Crypto.Digests;
 
-namespace LibHexCrypto.Hashs
+namespace LibHexCryptoStandard.Hashs
 {
     public static class SHA
     {

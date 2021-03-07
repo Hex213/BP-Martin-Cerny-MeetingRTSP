@@ -5,9 +5,17 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -25,7 +33,22 @@
     <CharacterSet>MultiByte</CharacterSet>
     <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <SpectreMitigation>false</SpectreMitigation>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <SpectreMitigation>false</SpectreMitigation>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
@@ -41,7 +64,13 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -49,7 +78,15 @@
     <OutDir>$(ProjectDir)..\bin\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir>$(ProjectDir)..\objs\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(ProjectDir)..\bin\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(ProjectDir)..\objs\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(ProjectDir)..\bin\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(ProjectDir)..\objs\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ProjectDir)..\bin\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir>$(ProjectDir)..\objs\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
@@ -59,7 +96,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\libs\glfw\include;$(ProjectDir)..\libs\gl3w;$(ProjectDir)codec\QsvCodec\include\msdk\include;$(ProjectDir)codec\QsvCodec\include;$(ProjectDir)libyuv\include;$(ProjectDir)capture;$(ProjectDir)imgui;$(ProjectDir)net;$(ProjectDir)wasapi;$(ProjectDir)codec;$(ProjectDir)..\libs\ffmpeg\include;$(ProjectDir)..\libs\SDL2\include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\libs\glfw\include;$(ProjectDir)..\libs\gl3w;$(ProjectDir)codec\QsvCodec\include\msdk\include;$(ProjectDir)codec\QsvCodec\include;$(ProjectDir)libyuv\include;$(ProjectDir)capture;$(ProjectDir)imgui;$(ProjectDir)net;$(ProjectDir)wasapi;$(ProjectDir)codec;$(ProjectDir)..\libs\ffmpeg\include;$(ProjectDir)..\libs\SDL2\include;$(ProjectDir);D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\Cryptopp840;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;__WINDOWS_WASAPI__;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -68,7 +105,26 @@
     <Link>
       <AdditionalLibraryDirectories>$(ProjectDir)..\libs\glfw\lib-vc2010-32;$(ProjectDir)..\libs\SDL2\lib\x86;$(ProjectDir)..\libs\ffmpeg\lib;$(ProjectDir)..\libs\portaudio\lib\debug;$(ProjectDir)..\libs\screen_capture\lib\debug;$(ProjectDir)..\libs\screen_capture_lite\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;SDL2.lib;avdevice.lib;avformat.lib;swresample.lib;avcodec.lib;swscale.lib;avutil.lib;dxgi.lib;d3d11.lib;d3d9.lib;dxva2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;SDL2.lib;avdevice.lib;avformat.lib;swresample.lib;avcodec.lib;swscale.lib;avutil.lib;dxgi.lib;d3d11.lib;d3d9.lib;dxva2.lib;D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\Cryptopp840\Win32\Output\Debug\cryptlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ProgramDatabaseFile>$(TEMP)$(TargetName).pdb</ProgramDatabaseFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>false</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\libs\glfw\include;$(ProjectDir)..\libs\gl3w;$(ProjectDir)codec\QsvCodec\include\msdk\include;$(ProjectDir)codec\QsvCodec\include;$(ProjectDir)libyuv\include;$(ProjectDir)capture;$(ProjectDir)imgui;$(ProjectDir)net;$(ProjectDir)wasapi;$(ProjectDir)codec;$(ProjectDir)..\libs\ffmpeg\include;$(ProjectDir)..\libs\SDL2\include;$(ProjectDir);D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\Cryptopp840;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;__WINDOWS_WASAPI__;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ProgramDataBaseFileName>$(TEMP)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\libs\glfw\lib-vc2010-32;$(ProjectDir)..\libs\SDL2\lib\x86;$(ProjectDir)..\libs\ffmpeg\lib;$(ProjectDir)..\libs\portaudio\lib\debug;$(ProjectDir)..\libs\screen_capture\lib\debug;$(ProjectDir)..\libs\screen_capture_lite\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;SDL2.lib;avdevice.lib;avformat.lib;swresample.lib;avcodec.lib;swscale.lib;avutil.lib;dxgi.lib;d3d11.lib;d3d9.lib;dxva2.lib;D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\Cryptopp840\Win32\Output\Debug\cryptlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ProgramDatabaseFile>$(TEMP)$(TargetName).pdb</ProgramDatabaseFile>
     </Link>
   </ItemDefinitionGroup>
@@ -80,7 +136,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\libs\glfw\include;$(ProjectDir)..\libs\gl3w;$(ProjectDir)codec\QsvCodec\include\msdk\include;$(ProjectDir)codec\QsvCodec\include;$(ProjectDir)libyuv\include;$(ProjectDir)capture;$(ProjectDir)imgui;$(ProjectDir)net;$(ProjectDir)wasapi;$(ProjectDir)codec;$(ProjectDir)..\libs\ffmpeg\include;$(ProjectDir)..\libs\SDL2\include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\Cryptopp840;$(ProjectDir)..\libs\glfw\include;$(ProjectDir)..\libs\gl3w;$(ProjectDir)codec\QsvCodec\include\msdk\include;$(ProjectDir)codec\QsvCodec\include;$(ProjectDir)libyuv\include;$(ProjectDir)capture;$(ProjectDir)imgui;$(ProjectDir)net;$(ProjectDir)wasapi;$(ProjectDir)codec;$(ProjectDir)..\libs\ffmpeg\include;$(ProjectDir)..\libs\SDL2\include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;__WINDOWS_WASAPI__;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -92,10 +148,34 @@
       <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
       <StackReserveSize>
       </StackReserveSize>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;SDL2.lib;avdevice.lib;avformat.lib;swresample.lib;avcodec.lib;swscale.lib;avutil.lib;dxgi.lib;d3d11.lib;d3d9.lib;dxva2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;SDL2.lib;avdevice.lib;avformat.lib;swresample.lib;avcodec.lib;swscale.lib;avutil.lib;dxgi.lib;d3d11.lib;d3d9.lib;dxva2.lib;D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\Cryptopp840\Win32\Output\Release\cryptlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>false</ConformanceMode>
+      <AdditionalIncludeDirectories>D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\Cryptopp840;$(ProjectDir)..\libs\glfw\include;$(ProjectDir)..\libs\gl3w;$(ProjectDir)codec\QsvCodec\include\msdk\include;$(ProjectDir)codec\QsvCodec\include;$(ProjectDir)libyuv\include;$(ProjectDir)capture;$(ProjectDir)imgui;$(ProjectDir)net;$(ProjectDir)wasapi;$(ProjectDir)codec;$(ProjectDir)..\libs\ffmpeg\include;$(ProjectDir)..\libs\SDL2\include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;__WINDOWS_WASAPI__;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\libs\glfw\lib-vc2010-32;$(ProjectDir)..\libs\SDL2\lib\x86;$(ProjectDir)..\libs\portaudio\lib\release;$(ProjectDir)..\libs\ffmpeg\lib;$(ProjectDir)..\libs\screen_capture\lib\release;$(ProjectDir)..\libs\screen_capture_lite\lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
+      <StackReserveSize>
+      </StackReserveSize>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;SDL2.lib;avdevice.lib;avformat.lib;swresample.lib;avcodec.lib;swscale.lib;avutil.lib;dxgi.lib;d3d11.lib;d3d9.lib;dxva2.lib;D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\Cryptopp840\Win32\Output\Release\cryptlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AesGcm.cpp" />
     <ClCompile Include="capture\AudioCapture\AudioCapture.cpp" />
     <ClCompile Include="capture\AudioCapture\WASAPICapture.cpp" />
     <ClCompile Include="capture\AudioCapture\WASAPIPlayer.cpp" />
@@ -130,6 +210,8 @@
     <ClCompile Include="codec\QsvCodec\src\qsv_main.cpp" />
     <ClCompile Include="csrc\getopt.c" />
     <ClCompile Include="csrc\hd_client.c" />
+    <ClCompile Include="Global.cpp" />
+    <ClCompile Include="HexPacket.cpp" />
     <ClCompile Include="imgui\gl3w\GL\gl3w.c" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />
@@ -233,6 +315,7 @@
     <ClCompile Include="xop\RtspServer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AesGcm.h" />
     <ClInclude Include="capture\AudioCapture\AudioBuffer.h" />
     <ClInclude Include="capture\AudioCapture\AudioCapture.h" />
     <ClInclude Include="capture\AudioCapture\WASAPICapture.h" />
@@ -272,6 +355,8 @@
     <ClInclude Include="codec\QsvCodec\src\mfx_vector.h" />
     <ClInclude Include="codec\QsvCodec\src\mfx_win_reg_key.h" />
     <ClInclude Include="csrc\getopt.h" />
+    <ClInclude Include="Global.h" />
+    <ClInclude Include="HexPacket.h" />
     <ClInclude Include="imgui\gl3w\GL\gl3w.h" />
     <ClInclude Include="imgui\gl3w\GL\glcorearb.h" />
     <ClInclude Include="imgui\imconfig.h" />

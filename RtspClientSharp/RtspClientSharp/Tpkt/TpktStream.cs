@@ -2,7 +2,9 @@
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Tasks;
+using LibHexCryptoStandard.Packet;
 using RtspClientSharp.Utils;
 
 namespace RtspClientSharp.Tpkt
@@ -19,9 +21,12 @@ namespace RtspClientSharp.Tpkt
 
         private readonly Stream _stream;
 
-        public TpktStream(Stream stream)
+        private readonly ConnectionParameters _conParam;
+
+        public TpktStream(Stream stream, ConnectionParameters cparam)
         {
             _stream = stream ?? throw new ArgumentNullException(nameof(stream));
+            _conParam = cparam ?? throw new ArgumentNullException(nameof(cparam));
         }
 
         public async Task<TpktPayload> ReadAsync()
@@ -96,11 +101,12 @@ namespace RtspClientSharp.Tpkt
         {
             if (_nonParsedDataSize != 0)
                 Buffer.BlockCopy(_readBuffer, _nonParsedDataOffset, _readBuffer, 0, _nonParsedDataSize);
-
+            
             int packetPosition;
             while ((packetPosition = FindTpktSignature(_nonParsedDataSize)) == -1)
             {
-                _nonParsedDataSize = await _stream.ReadAsync(_readBuffer, 0, _readBuffer.Length);
+                _nonParsedDataSize = await HexNetworkController.Read(_stream, _readBuffer, 0, _conParam.Enryption, _conParam.UseBase64);
+                //_nonParsedDataSize = await _stream.ReadAsync(_readBuffer, 0, _readBuffer.Length);
 
                 if (_nonParsedDataSize == 0)
                     throw new EndOfStreamException("End of TPKT stream");

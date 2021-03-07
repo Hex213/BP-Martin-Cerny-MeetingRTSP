@@ -4,6 +4,8 @@
 #include "MainWindow.h"
 #include <cstdlib>
 
+
+#include "AesGcm.h"
 #include "csrc/getopt.h"
 
 #define TESTING 0
@@ -41,12 +43,25 @@ unsigned long __stdcall NET_RvThr(void* pParam) {
 	return Finished;
 }
 
+#include "Global.h"
+
+std::string key;
+std::string iv;
+
 int main(int argc, char **argv)
 {
+#if ENCRYPT_PKT > 1 || ENCRYPT_PKT < 0 || ENCRYPT_WHENBUILD > 1 || ENCRYPT_WHENBUILD < 0 || ENCRYPT_USEBASE64 > 1 || ENCRYPT_USEBASE64 < 0
+	throw new std::exception("Not allowed definitions!");
+#endif
+#if ENCRYPT_PKT
+	HexDecode(hexKey, key);
+	HexDecode(hexIV, iv);
+#endif
+	
+#ifndef  _DEBUG	
 	//Pipe Init Data
 	char buf[100];
 
-#ifndef  _DEBUG
 	LPTSTR lpszPipename1 = const_cast<LPSTR>("\\\\.\\pipe\\serverIN");
 	LPTSTR lpszPipename2 = const_cast<LPSTR>("\\\\.\\pipe\\serverOUT");
 
@@ -84,15 +99,14 @@ int main(int argc, char **argv)
 	} while (hPipe2 == NULL || hPipe2 == INVALID_HANDLE_VALUE);
 
 	hThread = CreateThread(NULL, 0, &NET_RvThr, NULL, 0, NULL);
-
-#endif
 	
-	//WriteFile(hPipe1, buf, dwBytesToWrite, &cbWritten, NULL);
-	//memset(buf, 0xCC, 100);
+	WriteFile(hPipe1, buf, dwBytesToWrite, &cbWritten, NULL);
+	memset(buf, 0xCC, 100);
 
 
-	//CloseHandle(hPipe1);
-	//CloseHandle(hPipe2);
+	CloseHandle(hPipe1);
+	CloseHandle(hPipe2);
+#endif
 	
 	AVConfig avconfig;
 	avconfig.bitrate_bps = 4000000; // video bitrate

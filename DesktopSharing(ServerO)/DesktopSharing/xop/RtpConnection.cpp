@@ -2,8 +2,11 @@
 // 2018-9-30
 
 #include "RtpConnection.h"
+
+#include "Global.h"
 #include "RtspConnection.h"
 #include "net/SocketUtil.h"
+//#include "AesGcm.h"
 
 using namespace std;
 using namespace xop;
@@ -229,8 +232,13 @@ void RtpConnection::SetRtpHeader(MediaChannelId channel_id, RtpPacket pkt)
 	}
 }
 
+#if ENCRYPT_PKT
+extern std::string key;
+extern std::string iv;
+#endif
+
 int RtpConnection::SendRtpPacket(MediaChannelId channel_id, RtpPacket pkt)
-{    //TODO: add crypto (two func down)
+{
 	if (is_closed_) {
 		return -1;
 	}
@@ -259,6 +267,8 @@ int RtpConnection::SendRtpPacket(MediaChannelId channel_id, RtpPacket pkt)
 	return ret ? 0 : -1;
 }
 
+//#include "Global.h"
+
 int RtpConnection::SendRtpOverTcp(MediaChannelId channel_id, RtpPacket pkt)
 {
 	auto conn = rtsp_connection_.lock();
@@ -273,6 +283,8 @@ int RtpConnection::SendRtpOverTcp(MediaChannelId channel_id, RtpPacket pkt)
 	rtpPktPtr[2] = (char)(((pkt.size-4)&0xFF00)>>8);
 	rtpPktPtr[3] = (char)((pkt.size -4)&0xFF);
 
+	std::cout << "SendTCP("<< pkt.size << ")" << std::endl;
+
 	conn->Send((char*)rtpPktPtr, pkt.size);
 	return pkt.size;
 }
@@ -281,15 +293,40 @@ int RtpConnection::SendRtpOverUdp(MediaChannelId channel_id, RtpPacket pkt)
 {
 	//media_channel_info_[channel_id].octetCount  += pktSize;
 	//media_channel_info_[channel_id].packetCount += 1;
+	int ret = -1;
+	
+	//Encryption for data(udp)
+#if ENCRYPT_PKT
+	HexPacket* hpkt = new HexPacket(reinterpret_cast<char*>(pkt.data.get() + 4), pkt.size - 4, 0);
+	hpkt->encryptPacket();
+	size_t send_data_bytes = 0;
+	const auto* send_data = hpkt->getDataToSend(send_data_bytes);
 
-	int ret = sendto(rtpfd_[channel_id], (const char*)pkt.data.get()+4, pkt.size-4, 0, 
+	std::cout << "SendUDP(" << send_data_bytes << ")/clear(" << pkt.size - 4 << ")" << std::endl;
+	ret = sendto(rtpfd_[channel_id], send_data, send_data_bytes, 0,
+		(struct sockaddr*)&(peer_rtp_addr_[channel_id]),
+		sizeof(struct sockaddr_in));
+	
+	delete[] send_data;
+	free(hpkt);
+#else
+	std::cout << "SendUDP(" << pkt.size - 4 << ")" << std::endl;
+	ret = sendto(rtpfd_[channel_id], (const char*)pkt.data.get()+4, pkt.size-4, 0, 
 					(struct sockaddr *)&(peer_rtp_addr_[channel_id]),
 					sizeof(struct sockaddr_in));
-                   
+#endif
+
+
+	//TODO: correct ret value
 	if(ret < 0) {        
 		Teardown();
 		return -1;
 	}
 
+	/*if(ret == hpkt->get_size())
+	{
+		
+	}*/
+	
 	return ret;
 }
