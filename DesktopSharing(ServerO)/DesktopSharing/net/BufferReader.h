@@ -33,7 +33,7 @@ public:
 
 	uint32_t WritableBytes() const
 	{  return (uint32_t)(buffer_->size() - writer_index_); }
-
+	
 	char* Peek() 
 	{ return Begin() + reader_index_; }
 
@@ -77,25 +77,26 @@ public:
 	void RetrieveUntil(const char* end)
 	{ Retrieve(end - Peek()); }
 
-	int Read(SOCKET sockfd);
+	int Read(SOCKET sockfd, int& offset);
 	uint32_t ReadAll(std::string& data);
 	uint32_t ReadUntilCrlf(std::string& data);
 
 	uint32_t Size() const 
 	{ return (uint32_t)buffer_->size(); }
 
+	//povodne private
+	char* beginWrite()
+	{ return Begin() + writer_index_; }
+
+	const char* BeginWrite() const
+	{ return Begin() + writer_index_; }
+	
 private:
 	char* Begin()
 	{ return &*buffer_->begin(); }
 
 	const char* Begin() const
 	{ return &*buffer_->begin(); }
-
-	char* beginWrite()
-	{ return Begin() + writer_index_; }
-
-	const char* BeginWrite() const
-	{ return Begin() + writer_index_; }
 
 	std::shared_ptr<std::vector<char>> buffer_;
 	size_t reader_index_ = 0;

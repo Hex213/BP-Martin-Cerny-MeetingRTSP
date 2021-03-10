@@ -1,9 +1,14 @@
 #include "Global.h"
 
+#include <string>
+#include <limits>
+
 #if ENCRYPT_PKT
 extern std::string key;
 extern std::string iv;
 #endif
+
+extern std::string m_ErrorMessage;
 
 char* encrypt(const char* message, size_t& size)
 {
@@ -83,4 +88,73 @@ int encryptAndClearWO(const char* buf, int buf_size, char* res, int size)
 {
 	if (res != nullptr) free(res);
 	return (int)strlen(buf);
+}
+
+int _bytesToInt(char *data, bool dir)
+{
+	int mi = dir ? 0 : 1;
+	return int((unsigned char)(data[0 + (3*mi)]) << 24 |
+		(unsigned char)(data[1 + mi]) << 16 |
+		(unsigned char)(data[2 - mi]) << 8 |
+		(unsigned char)(data[3 - (3 * mi)]));
+}
+
+
+char* decrypt(char* data, size_t len, int& outSize)
+{
+#if ENCRYPT_PKT
+	if (data == nullptr || len <= 8)
+	{
+		m_ErrorMessage = "Bad input data or len";
+		return nullptr;
+	}
+	std::string tmp = data;
+
+	char nullCheck[] = { 0,0,0,0 };
+
+	int offset = tmp.find(nullCheck);
+	if(offset == std::string::npos)
+	{
+		m_ErrorMessage = "Cannot find start of packet";
+		return nullptr;
+	}
+	
+	char nullBytes[5];
+	char sizebytes[5];
+
+	memset(nullBytes, 0, 5);
+	memset(sizebytes, 0, 5);
+	
+	memcpy(nullBytes, data, 4);
+	memcpy(sizebytes, data + 4, 4);
+
+	auto sizeUL = _bytesToInt(sizebytes, sizebytes[0] == 0 ? true : false);
+	if (!(sizeUL > 0 && sizeUL < USHRT_MAX))
+	{
+		std::stringstream ss;
+		ss << "Bad packet size: " << 0 << "<" << sizeUL << "<" << USHRT_MAX;
+		ss >> m_ErrorMessage;
+		return nullptr;
+	}
+
+	char* dataToDecrypt = (char*)malloc(sizeUL);
+	memcpy(dataToDecrypt, data + 4 + 4, sizeUL);
+
+	outSize = static_cast<int>(sizeUL);
+	
+	char* decrypted = nullptr;
+	// pktData.c_str(), pktDataLen, & outEncryptedText, _size
+	decrypt_aes256_gcm(key.c_str(), iv.c_str(), dataToDecrypt, &decrypted, outSize);
+
+	free (dataToDecrypt);
+	return decrypted;
+#else
+	outSize = len;
+	return data;
+#endif
+}
+
+std::string GetLastCryptoError()
+{
+	return m_ErrorMessage;
 }

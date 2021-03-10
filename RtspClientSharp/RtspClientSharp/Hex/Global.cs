@@ -6,7 +6,7 @@ namespace LibRtspClientSharp.Hex
 {
     public static class Global
     {
-        public static readonly bool strictPrint = false;
+        public static readonly bool strictPrint = true;
         public static readonly bool onlyFrames = true;
     }
 }

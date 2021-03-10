@@ -6,6 +6,8 @@
 #include <cstring>
 #include <iostream>
 
+#include "Global.h"
+
 using namespace xop;
 uint32_t xop::ReadUint32BE(char* data)
 {
@@ -62,7 +64,7 @@ BufferReader::~BufferReader()
 	
 }
 
-int BufferReader::Read(SOCKET sockfd)
+int BufferReader::Read(SOCKET sockfd, int &offset)
 {	
 	uint32_t size = WritableBytes();
 	if(size < MAX_BYTES_PER_READ) {
@@ -77,8 +79,8 @@ int BufferReader::Read(SOCKET sockfd)
 	int bytes_read = ::recv(sockfd, beginWrite(), MAX_BYTES_PER_READ, 0);
 
 	if(bytes_read > 0) {
-		std::string s(buffer_->data(), bytes_read);
-		std::cout << "Recv(" << bytes_read << "):" << s << std::endl;
+		//std::string s(buffer_->data(), bytes_read);
+
 		writer_index_ += bytes_read;
 	}
 

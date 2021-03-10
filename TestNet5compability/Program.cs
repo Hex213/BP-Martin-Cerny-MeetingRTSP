@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using LibHexCryptoStandard.Algoritm;
+using LibHexCryptoStandard.Packet;
 using RtspClientSharp;
 using RtspClientSharp.Rtsp;
 
@@ -22,23 +23,27 @@ namespace TestNet5compability
             var connectionParameters = new ConnectionParameters(serverUri, credentials);
             var cancellationTokenSource = new CancellationTokenSource();
 
-            Console.WriteLine("Press any key to connect");
-            Console.ReadLine();
+            /*test passage*/
+            const bool test = true;
+            connectionParameters.Enryption = test;
+            connectionParameters.UseBase64 = test;
+            connectionParameters.RtpTransport = RtpTransportProtocol.TCP;
+
+            Console.WriteLine("(ENCRYPT_PKT)=" + connectionParameters.Enryption + ", (ENCRYPT_USEBASE64)=" +
+                              connectionParameters.UseBase64 + ", (PROTOCOL)=" +
+                              connectionParameters.RtpTransport);
+
+            byte[] testBytes = { 15, 32, 14, 205, 0};
+            var hpkt = HexPacket.CreatePacket(testBytes, connectionParameters.UseBase64);
+            byte[] pkt = (byte[]) hpkt.Encrypt();
+            /*end passage*/
 
             connectionParameters.CancelTimeout = TimeSpan.FromSeconds(30);
             connectionParameters.ConnectTimeout = TimeSpan.FromSeconds(30);
             connectionParameters.ReceiveTimeout = TimeSpan.FromSeconds(30);
-            /*
-             * Zo dna 7.3. - (0,f,U), (0,f,U), (0,t,T), (0,f,T), (1,f,U), (1,f,U), (1,t,T), (1,f,T) 
-             * Enrypt:  (0,1)
-             * Base64:  (f,t)
-             * Protoc:  (U,T)
-             * Pass: (1,f,T), (1,f,U)
-             * Fail: (1,t,T), (1,t,U), (0,t,U), (0,f,U), (0,t,T), (0,f,T)
-             */
-            connectionParameters.Enryption = false;
-            connectionParameters.UseBase64 = false;
-            connectionParameters.RtpTransport = RtpTransportProtocol.TCP;
+
+            Console.WriteLine("Press any key to connect");
+            Console.ReadLine();
 
             Task connectTask = ConnectAsync(connectionParameters, cancellationTokenSource.Token);
 

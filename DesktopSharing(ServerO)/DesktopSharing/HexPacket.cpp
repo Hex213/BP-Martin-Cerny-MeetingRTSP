@@ -5,7 +5,7 @@
 
 #include "Global.h"
 
-void HexPacket::recreatePtr(char* str, uint32_t dataSizes)
+void HexPacket::_recreatePtr(char* str, uint32_t dataSizes)
 {
 	auto* tmp = this->data.get();
 	if(tmp != nullptr)
@@ -17,19 +17,22 @@ void HexPacket::recreatePtr(char* str, uint32_t dataSizes)
 	this->data.reset(tmp);
 }
 
-
-HexPacket::HexPacket(std::shared_ptr<char> data, uint32_t size, uint32_t offset)
+void HexPacket::_constructor_helper(char* str, uint32_t size, uint32_t offset, Packet_type type)
 {
-	this->recreatePtr(data.get(), size);
+	this->_recreatePtr(str, size);
 	this->size = size;
 	this->offset = offset;
+	this->type = type;
 }
 
-HexPacket::HexPacket(char* data, uint32_t size, uint32_t offset)
+HexPacket::HexPacket(std::shared_ptr<char> data, uint32_t size, uint32_t offset, Packet_type type)
 {
-	this->recreatePtr(data, size);
-	this->size = size;
-	this->offset = offset;
+	_constructor_helper(data.get(), size, offset, type);
+}
+
+HexPacket::HexPacket(char* str, uint32_t size, uint32_t offset, Packet_type type)
+{
+	_constructor_helper(str, size, offset, type);
 }
 
 HexPacket::~HexPacket()
@@ -40,8 +43,12 @@ HexPacket::~HexPacket()
 }
 
 
-bool HexPacket::encryptPacket()
+bool HexPacket::EncryptPacket()
 {
+	if (type != Packet_type::Encrypt)
+	{
+		return false;
+	}
 	try
 	{
 		size_t size = this->size;
@@ -64,8 +71,12 @@ bool HexPacket::encryptPacket()
 }
 
 //Don't forget free ptr after use
-const char* HexPacket::getDataToSend(size_t& outBytes)
+const char* HexPacket::GetDataToSend(size_t& outBytes)
 {
+	if (type == Packet_type::None)
+	{
+		return nullptr;
+	}
 	//create new data (4_null,x_lenght,y_data
 	auto s = (this->size - this->offset) + 4 + sizeof(this->size);
 	uint32_t toSendBytes = this->size - this->offset;
@@ -77,4 +88,18 @@ const char* HexPacket::getDataToSend(size_t& outBytes)
 	
 	outBytes = s;
 	return static_cast<char*>(toSend);
+}
+
+/*
+ * Packet Struct
+ * [null(4)][size(4)][data(x)]
+ */
+bool HexPacket::DecryptPacket(char* outPtr, size_t& outBytes)
+{
+	if (type != Packet_type::Decrypt || static_cast<long>(size - offset) < 9 || data == nullptr)
+	{
+		return false;
+	}
+
+	
 }

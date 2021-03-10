@@ -62,14 +62,14 @@ using CryptoPP::GCM_TablesOption;
 USING_NAMESPACE(CryptoPP)
 USING_NAMESPACE(std)
 
+std::string m_ErrorMessage;
+
 static inline RandomNumberGenerator& PSRNG(void)
 {
 	static AutoSeededRandomPool rng;
 	rng.Reseed();
 	return rng;
 }
-
-static std::string m_ErrorMessage;
 
 string converter(uint8_t* str) {
 	uint8_t key[] = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31 };
@@ -90,6 +90,7 @@ string converter(uint8_t* str) {
 bool encrypt_aes256_gcm(const char* aesKey, const char* aesIV,
 	const char* inPlainText, size_t& size, char** outEncryptedBase64, int& dataLength)
 {
+	m_ErrorMessage.clear();
 	bool bR = false;
 	//const int TAG_SIZE = 12;
 	std::string outText;
@@ -162,13 +163,21 @@ bool encrypt_aes256_gcm(const char* aesKey, const char* aesIV,
 	return bR;
 }
 
+//datalen input/output var
 bool decrypt_aes256_gcm(const char* aesKey, const char* aesIV,
 	const char* inBase64Text, char** outDecrypted, int& dataLength)
 {
+	m_ErrorMessage.clear();
 	bool bR = false;
 	std::string outText;
 	std::string pszDecodedText;
-	Base64Decode(inBase64Text, pszDecodedText);
+#if ENCRYPT_USEBASE64
+	string* toDecode = new string(inBase64Text, dataLength);
+	Base64Decode(*toDecode, pszDecodedText);
+	free(toDecode);
+#else
+	pszDecodedText = std::string(inBase64Text, dataLength);
+#endif
 
 	if (strlen(aesKey) > 31 && strlen(aesIV) > 15)
 	{

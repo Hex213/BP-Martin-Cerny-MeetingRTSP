@@ -42,7 +42,7 @@ namespace RtspClientSharp.Tpkt
 
             if (readCount > 0)
             {
-                await _stream.ReadExactAsync(_readBuffer, usefulDataSize, readCount);
+                await _stream.ReadExactAsync(_readBuffer, usefulDataSize, readCount, _conParam.Enryption, _conParam.UseBase64);
                 usefulDataSize = 0;
             }
             else
@@ -62,7 +62,7 @@ namespace RtspClientSharp.Tpkt
 
             if (readCount > 0)
             {
-                await _stream.ReadExactAsync(_readBuffer, TpktHeader.Size + usefulDataSize, readCount);
+                await _stream.ReadExactAsync(_readBuffer, TpktHeader.Size + usefulDataSize, readCount, _conParam.Enryption, _conParam.UseBase64);
                 _nonParsedDataSize = 0;
             }
             else
@@ -91,10 +91,26 @@ namespace RtspClientSharp.Tpkt
             _writeBuffer[2] = (byte) (payloadSegment.Count >> 8);
             _writeBuffer[3] = (byte) payloadSegment.Count;
 
-            Buffer.BlockCopy(payloadSegment.Array, payloadSegment.Offset, _writeBuffer, TpktHeader.Size,
-                payloadSegment.Count);
+            if (_conParam.Enryption)
+            {
+                //copy data
+                Buffer.BlockCopy(payloadSegment.Array, payloadSegment.Offset, _writeBuffer, TpktHeader.Size,
+                    payloadSegment.Count);
 
-            await _stream.WriteAsync(_writeBuffer, 0, packetSize);
+                var hexPacket = HexPacket.CreatePacket(_writeBuffer, _conParam.UseBase64);
+                byte[] dataToSend = (byte[])hexPacket.Encrypt();
+                
+                Console.WriteLine("SendTCP("+ dataToSend.Length + ")");
+                await _stream.WriteAsync(dataToSend, 0, dataToSend.Length);
+            }
+            else
+            {
+                //copy data
+                Buffer.BlockCopy(payloadSegment.Array, payloadSegment.Offset, _writeBuffer, TpktHeader.Size,
+                    payloadSegment.Count);
+
+                await _stream.WriteAsync(_writeBuffer, 0, packetSize);
+            }
         }
 
         private async Task<int> FindNextPacketAsync()

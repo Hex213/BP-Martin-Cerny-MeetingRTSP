@@ -1,11 +1,30 @@
 ﻿* Zo dna 7.3.2021
 	* Definicie:
-		* MainDS: ""
 		* Enrypt:=(0,1)
 		* Base64:=(f,t)
 		* Protoc:=(U,T)
-	* Tests: (0,f,U), (0,f,U), (0,t,T), (0,f,T), (1,f,U), (1,f,U), (1,t,T), (1,f,T)
+	* Tests: (0,f,U), (0,t,U), (0,f,T), (0,t,T), (1,f,U), (1,t,U), (1,f,T), (1,t,T)
 		* Pass: (1,f,T), (1,f,U)
 		* Fail: (1,t,T), (1,t,U), (0,t,U), (0,f,U), (0,t,T), (0,f,T)
 		* Pozn: "Pravdepodobne je problem pri poslednych neuspesnych testoch iba vtedy ked sa pripaja"
 - koniec zaznamu: 7.3.2021
+* Zo dna 8.3.2021
+	* Definicie:
+		* Enrypt:=(0,1)
+		* Base64:=(f,t)
+		* Protoc:=(U,T)
+	* Tests: (0,f,U), (0,t,U), (0,f,T), (0,t,T), (1,f,U), (1,t,U), (1,f,T), (1,t,T)
+		* Pass: (0,f,U), (0,t,U), (0,f,T), (0,t,T), (1,f,U), (1,t,U), (1,f,T), (1,t,T)
+		* Fail: 
+		* Pozn: "Vsetky testy su ok - encrypt data"
+- koniec zaznamu: 8.3.2021
+* Zo dna 10.3.2021
+	* Definicie:
+		* Enrypt:=(0,1)
+		* Base64:=(f,t)
+		* Protoc:=(U,T)
+	* Tests: (0,f,U), (0,t,U), (0,f,T), (0,t,T), (1,f,U), (1,t,U), (1,f,T), (1,t,T)
+		* Pass: (0,f,U), (0,t,U), (0,f,T), (0,t,T), (1,f,U), (1,t,U), (1,f,T), (1,t,T)
+		* Fail: 
+		* Pozn: "Vsetky testy su ok - encrypt conn"
+- koniec zaznamu: 10.3.2021

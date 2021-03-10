@@ -1,6 +1,13 @@
 #pragma once
 #include <memory>
 
+enum class Packet_type
+{
+	None,
+	Encrypt,
+	Decrypt
+};
+
 class HexPacket
 {
 private:
@@ -8,18 +15,21 @@ private:
 	uint32_t size;
 	uint32_t offset;
 	bool sended = false;
+	Packet_type type = Packet_type::None;
 
-	void recreatePtr(char* str, uint32_t dataSizes);
+	void _recreatePtr(char* str, uint32_t dataSizes);
+	void _constructor_helper(char* str, uint32_t size, uint32_t offset, Packet_type type);
 	
 public:
-	HexPacket(std::shared_ptr<char> data, uint32_t size, uint32_t offset);
-	HexPacket(char* str, uint32_t uint32, uint32_t i);
+	HexPacket(std::shared_ptr<char> data, uint32_t size, uint32_t offset, Packet_type type);
+	HexPacket(char* str, uint32_t size, uint32_t offset, Packet_type type);
 	~HexPacket();
-	//Encrypt data - maybe ram leak
-	bool encryptPacket();
+	//Encrypt data
+	bool EncryptPacket();
 	//Don't forget free ptr
-	const char* getDataToSend(size_t& outBytes);
-
+	const char* GetDataToSend(size_t& outBytes);
+	//Decrypt data
+	bool DecryptPacket(char* outPtr, size_t& outBytes);
 
 	void set_offset(uint32_t offset)
 	{

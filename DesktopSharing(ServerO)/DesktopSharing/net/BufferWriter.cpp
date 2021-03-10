@@ -72,8 +72,8 @@ bool BufferWriter::Append(std::shared_ptr<char> data, uint32_t size, uint32_t in
      
 	Packet pkt = {data, size, index};
 #if ENCRYPT_PKT
-	HexPacket hpkt(data, size, index);
-	if(hpkt.encryptPacket())
+	HexPacket hpkt(data, size, index, Packet_type::Encrypt);
+	if(hpkt.EncryptPacket())
 	{
 		bufferEncryp_->emplace(std::move(hpkt));
 	}
@@ -102,8 +102,8 @@ bool BufferWriter::Append(const char* data, uint32_t size, uint32_t index)
 	pkt.writeIndex = index;
 
 #if ENCRYPT_PKT
-	HexPacket hpkt(pkt.data, size, index);
-	if (hpkt.encryptPacket())
+	HexPacket hpkt(pkt.data, size, index, Packet_type::Encrypt);
+	if (hpkt.EncryptPacket())
 	{
 		bufferEncryp_->emplace(std::move(hpkt));
 	}
@@ -122,7 +122,7 @@ std::string getIV(void);
 
 //send tcp data
 int BufferWriter::Send(SOCKET sockfd, int timeout)
-{		//TODO: skontrolovat ci odosielanie s kontrolou je v poho
+{
 	if (timeout > 0) {
 		SocketUtil::SetBlock(sockfd, timeout); 
 	}
@@ -132,22 +132,32 @@ int BufferWriter::Send(SOCKET sockfd, int timeout)
 
 	do
 	{
-		if (buffer_->empty() || bufferEncryp_->empty()) {
+		if (buffer_->empty()) {
 			return 0;
 		}
+#if ENCRYPT_PKT
+		if (bufferEncryp_->empty()) {
+			return 0;
+		}
+		HexPacket& hpkt = bufferEncryp_->front();
+#endif
 
 		count -= 1;
 		Packet& pkt = buffer_->front();
-		HexPacket& hpkt = bufferEncryp_->front();
+		
 		
 #if ENCRYPT_PKT == 0
 		//Send data
+#if NETWORK_OUTPUT
 		std::cout << "Send(" << (pkt.size - pkt.writeIndex) << "): " << pkt.data.get() << std::endl;
+#endif
 		ret = ::send(sockfd, pkt.data.get() + pkt.writeIndex, pkt.size - pkt.writeIndex, 0);
 #else
 		size_t send_data_bytes = 0;
-		auto* send_data = hpkt.getDataToSend(send_data_bytes);
-		std::cout << "Send(" << (send_data_bytes - hpkt.get_offset()) << "): " << (ENCRYPT_USEBASE64 == 1 ? send_data : "(only base64 show data)") << std::endl;
+		auto* send_data = hpkt.GetDataToSend(send_data_bytes);
+#if NETWORK_OUTPUT
+		std::cout << "Send(" << (send_data_bytes - hpkt.get_offset()) << ")/("<<pkt.size<<"): " << (ENCRYPT_USEBASE64 == 1 ? send_data+4+4 : "(only base64 show data)") << std::endl;
+#endif
 		ret = ::send(sockfd, send_data, send_data_bytes, 0);
 		delete[] send_data;
 #endif
@@ -156,20 +166,23 @@ int BufferWriter::Send(SOCKET sockfd, int timeout)
 		if (ret > 0) {
 			//check if is sended all things
 			pkt.writeIndex += ret;
+#if ENCRYPT_PKT
 			if(ret <= 8)
 			{
 				throw std::exception("Network error!");
 			}
 			hpkt.set_offset(hpkt.get_offset() + ret - 4 - sizeof(uint32_t));
-			/*if (pkt.size == pkt.writeIndex) {
-				count += 1;
-				buffer_->pop();
-			}*/
 			if (hpkt.get_size() == hpkt.get_offset()) {
 				count += 1;
 				buffer_->pop();
 				bufferEncryp_->pop();
 			}
+#else
+			if (pkt.size == pkt.writeIndex) {
+				count += 1;
+				buffer_->pop();
+			}
+#endif
 		}
 		else if (ret < 0) {
 #if defined(__linux) || defined(__linux__)

@@ -50,7 +50,7 @@ std::string iv;
 
 int main(int argc, char **argv)
 {
-#if ENCRYPT_PKT > 1 || ENCRYPT_PKT < 0 || ENCRYPT_WHENBUILD > 1 || ENCRYPT_WHENBUILD < 0 || ENCRYPT_USEBASE64 > 1 || ENCRYPT_USEBASE64 < 0
+#if ENCRYPT_PKT > 1 || ENCRYPT_PKT < 0 || ENCRYPT_WHENBUILD > 1 || ENCRYPT_WHENBUILD < 0 || ENCRYPT_USEBASE64 > 1 || ENCRYPT_USEBASE64 < 0 || NETWORK_OUTPUT  < 0 || NETWORK_OUTPUT > 1
 	throw new std::exception("Not allowed definitions!");
 #endif
 #if ENCRYPT_PKT
@@ -107,7 +107,6 @@ int main(int argc, char **argv)
 	CloseHandle(hPipe1);
 	CloseHandle(hPipe2);
 #endif
-	
 	AVConfig avconfig;
 	avconfig.bitrate_bps = 4000000; // video bitrate
 	avconfig.framerate = 25;        // video framerate
@@ -176,6 +175,9 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
+	std::cout << "(ENCRYPT_PKT)=" << ENCRYPT_PKT
+			<< ", (ENCRYPT_WHENBUILD)=" << ENCRYPT_WHENBUILD
+			<< ", (ENCRYPT_USEBASE64)=" << ENCRYPT_USEBASE64 << std::endl;
 	ScreenLive::Instance().StartLive(SCREEN_LIVE_RTSP_SERVER, live_config);
 	//ScreenLive::Instance().StartLive(SCREEN_LIVE_RTSP_PUSHER, live_config);
 	//ScreenLive::Instance().StartLive(SCREEN_LIVE_RTMP_PUSHER, live_config);

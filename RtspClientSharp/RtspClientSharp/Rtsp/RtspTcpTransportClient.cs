@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using LibHexCryptoStandard.Packet;
 using LibRtspClientSharp.Hex;
 using RtspClientSharp.Utils;
 
@@ -55,21 +56,45 @@ namespace RtspClientSharp.Rtsp
             _tcpClient?.Close();
         }
 
-        //TODO: sending
+        
         protected override Task WriteAsync(byte[] buffer, int offset, int count)
         {
             Debug.Assert(_networkStream != null, "_networkStream != null");
-            if(Global.strictPrint)
+            if(!Global.strictPrint)
             {
-                Console.WriteLine("Send(" + count + "):" + Encoding.UTF8.GetString(buffer, offset, count));
+                Console.WriteLine("SendClear(" + count + "):" + Encoding.UTF8.GetString(buffer, offset, count));
             }
             else
             {
-                Console.WriteLine("Send(" + count + ")");
+                if (!Global.onlyFrames)
+                {
+                    Console.WriteLine("SendClear(" + count + ")");
+                }
             }
+
+            if (ConnectionParameters.Enryption)
+            {
+                byte[] bytes = new byte[count];
+                Buffer.BlockCopy(buffer, offset, bytes, 0, count);
+                var hexPacket = HexPacket.CreatePacket(bytes, ConnectionParameters.UseBase64);
+                var toSend = (byte[])hexPacket.Encrypt();
+                Buffer.BlockCopy(toSend, 0, buffer, offset, toSend.Length);
+                count = toSend.Length;
+            }
+
+            if (!Global.onlyFrames)
+            {
+                Console.WriteLine("Send(" + count + ")");
+                if(!Global.strictPrint)
+                {
+                    Console.WriteLine(Encoding.UTF8.GetString(buffer, 8, count));
+                }
+            }
+
             return _networkStream.WriteAsync(buffer, offset, count);
         }
 
+        //todo:sem read decrypt
         protected override Task<int> ReadAsync(byte[] buffer, int offset, int count)
         {
             Debug.Assert(_networkStream != null, "_networkStream != null");
@@ -79,7 +104,7 @@ namespace RtspClientSharp.Rtsp
         protected override Task ReadExactAsync(byte[] buffer, int offset, int count)
         {
             Debug.Assert(_networkStream != null, "_networkStream != null");
-            return _networkStream.ReadExactAsync(buffer, offset, count);
+            return _networkStream.ReadExactAsync(buffer, offset, count, ConnectionParameters.Enryption, ConnectionParameters.UseBase64);
         }
     }
 }

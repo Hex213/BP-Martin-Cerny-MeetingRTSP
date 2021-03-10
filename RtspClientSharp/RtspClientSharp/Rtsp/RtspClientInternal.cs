@@ -69,20 +69,20 @@ namespace RtspClientSharp.Rtsp
         //TODO: preverit ako funguje
         public async Task ConnectAsync(CancellationToken token)
         {
-            //cseq 1
+            //connection
             IRtspTransportClient rtspTransportClient = _transportClientProvider();
             Volatile.Write(ref _rtspTransportClient, rtspTransportClient);
 
             await _rtspTransportClient.ConnectAsync(token);
 
-            //cseq 2
+            //cseq 1
             RtspRequestMessage optionsRequest = _requestMessageFactory.CreateOptionsRequest();
             RtspResponseMessage optionsResponse = await _rtspTransportClient.ExecuteRequest(optionsRequest, token);
 
             if (optionsResponse.StatusCode == RtspStatusCode.Ok)
                 ParsePublicHeader(optionsResponse.Headers[WellKnownHeaders.Public]);
 
-            //cseq 3
+            //cseq 2
             RtspRequestMessage describeRequest = _requestMessageFactory.CreateDescribeRequest();
             RtspResponseMessage describeResponse =
                 await _rtspTransportClient.EnsureExecuteRequest(describeRequest, token);
@@ -581,6 +581,12 @@ namespace RtspClientSharp.Rtsp
                 var payloadSegment = hexPacket != null
                     ? new ArraySegment<byte>(toProcess, 0, (int)hexPacket.DecryptedBytesSize)
                     : new ArraySegment<byte>(readBuffer, 0, read);
+
+                //var outbytes = await HexNetworkController.ReadBySocket(client, bufferSegment, 0, _connectionParameters.Enryption,
+                //    _connectionParameters.UseBase64, Global.strictPrint);
+                //int read = outbytes.Length;
+                //var payloadSegment = new ArraySegment<byte>(outbytes, 0, read);
+
                 rtpStream.Process(payloadSegment);
 
                 int ticksNow = Environment.TickCount;
@@ -623,13 +629,17 @@ namespace RtspClientSharp.Rtsp
             byte[] streamBuffer = bufferStream.GetBuffer();
             return new ArraySegment<byte>(streamBuffer, 0, (int)bufferStream.Position);
         }
-
+        //todo: mozno nepotrebne
         private void DecryptData(in int read, in ArraySegment<byte> bufferSegment, ref HexPacket hexPacket, ref byte[] toProcess)
         {
             //Vypis
-            if (_connectionParameters.UseBase64 && Global.strictPrint)
+            if (_connectionParameters.UseBase64 && !Global.strictPrint)
             {
-                Console.WriteLine("Recv(" + read + "):" + Encoding.UTF8.GetString(bufferSegment.Array, 0, read));
+                Console.WriteLine("Recv(" + read + "):" +
+                                  Encoding.UTF8.GetString(
+                                      Convert.FromBase64String(
+                                          Encoding.UTF8
+                                              .GetString(bufferSegment)))); //.GetString(bufferSegment.Array, 0, read));
             }
             else
             {
@@ -643,15 +653,9 @@ namespace RtspClientSharp.Rtsp
             if (!_connectionParameters.Enryption || read <= 8) return;
             var toDecryptBytes = new byte[read];
             Buffer.BlockCopy(bufferSegment.Array, 0, toDecryptBytes, 0, read);
-            hexPacket = new HexPacket(toDecryptBytes, _connectionParameters.UseBase64);
-            if (_connectionParameters.UseBase64)
-            {
-                toProcess = Encoding.UTF8.GetBytes((string)hexPacket.Decrypt());
-            }
-            else
-            {
-                toProcess = (byte[])hexPacket.Decrypt();
-            }
+            hexPacket = new HexPacket(toDecryptBytes, _connectionParameters.UseBase64, EncryptType.Decrypt);
+
+            toProcess = (byte[]) hexPacket.Decrypt();
         }
     }
 }

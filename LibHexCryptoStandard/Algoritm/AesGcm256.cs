@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Security;
 using System.Security.Cryptography;
 using System.Text;
+using LibHexCryptoStandard.Packet;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -14,12 +15,11 @@ namespace LibHexCryptoStandard.Algoritm
     public class AesGcm256
     {
         public static byte[] Key => key;
-
         public static byte[] Iv => iv;
 
         private static readonly SecureRandom Random = new SecureRandom();
-        private static byte[] key;
-        private static byte[] iv;
+        private static byte[] key = null;
+        private static byte[] iv = null;
 
         // Pre-configured Encryption Parameters
         public static readonly int NonceBitSize = 128;
@@ -37,6 +37,10 @@ namespace LibHexCryptoStandard.Algoritm
         /// <param name="iv">iv (hexa format)</param>
         public static void init(string key, string iv)
         {
+            if (key.Length != 64 || iv.Length != 32)
+            {
+                throw new TypeInitializationException("key or iv has not correct len(hex format)", null);
+            }
             AesGcm256.key = AesGcm256.HexToByte(key);
             AesGcm256.iv = AesGcm256.HexToByte(iv);
         }
@@ -95,12 +99,20 @@ namespace LibHexCryptoStandard.Algoritm
             return hex;
         }
 
-        public static string encrypt(string PlainText, byte[] key, byte[] iv)
+        public static byte[] encrypt(byte[] block)
         {
+            if (key == null || iv == null)
+            {
+                throw new TypeInitializationException("Not initialized!", null);
+            }
             string sR = string.Empty;
             try
             {
-                byte[] plainBytes = Encoding.UTF8.GetBytes(PlainText);
+                byte[] plainBytes = block;
+                if (block == null || block.Length == 0)
+                {
+                    throw new PacketException("Input dta missing!");
+                }
 
                 GcmBlockCipher cipher = new GcmBlockCipher(new AesFastEngine());
                 AeadParameters parameters =
@@ -112,7 +124,9 @@ namespace LibHexCryptoStandard.Algoritm
                 Int32 retLen = cipher.ProcessBytes
                     (plainBytes, 0, plainBytes.Length, encryptedBytes, 0);
                 cipher.DoFinal(encryptedBytes, retLen);
-                sR = Convert.ToBase64String(encryptedBytes, Base64FormattingOptions.None);
+
+                return encryptedBytes;
+                //sR = Convert.ToBase64String(encryptedBytes, Base64FormattingOptions.None);
             }
             catch (Exception ex)
             {
@@ -120,7 +134,7 @@ namespace LibHexCryptoStandard.Algoritm
                 Console.WriteLine(ex.StackTrace);
             }
 
-            return sR;
+            return null;
         }
 
         /// <summary>
@@ -131,18 +145,15 @@ namespace LibHexCryptoStandard.Algoritm
         /// <returns></returns>
         public static Object decrypt(string EncryptedText/*, byte[] key, byte[] iv*/, byte[] block = null)
         {
+            if (key == null || iv == null)
+            {
+                throw new TypeInitializationException("Not initialized!", null);
+            }
             string sR = string.Empty;
             try
             {
                 byte[] encryptedBytes;
-                if(block == null)
-                {
-                    encryptedBytes = Convert.FromBase64String(EncryptedText);
-                }
-                else
-                {
-                    encryptedBytes = block;
-                }
+                encryptedBytes = block ?? Convert.FromBase64String(EncryptedText);
 
                 GcmBlockCipher cipher = new GcmBlockCipher(new AesFastEngine());
                 AeadParameters parameters =
@@ -155,14 +166,7 @@ namespace LibHexCryptoStandard.Algoritm
                     (encryptedBytes, 0, encryptedBytes.Length, plainBytes, 0);
                 cipher.DoFinal(plainBytes, retLen);
 
-                if (block == null)
-                {
-                    sR = Encoding.UTF8.GetString(plainBytes); //.TrimEnd("\r\n\0".ToCharArray());
-                }
-                else
-                {
-                    return plainBytes;
-                }
+                return plainBytes;
             }
             catch (Exception ex)
             {
@@ -170,7 +174,7 @@ namespace LibHexCryptoStandard.Algoritm
                 Console.WriteLine(ex.StackTrace);
             }
 
-            return sR;
+            return null;
         }
     }
 }

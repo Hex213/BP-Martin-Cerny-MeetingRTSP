@@ -77,6 +77,7 @@ namespace RtspClientSharp.Rtsp
             return responseMessage;
         }
 
+        //todo:sennd connection
         public Task SendRequestAsync(RtspRequestMessage requestMessage, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
@@ -85,10 +86,9 @@ namespace RtspClientSharp.Rtsp
                 AddAuthorizationHeader(requestMessage);
 
             string requestMessageString = requestMessage.ToString();
-
-            //TODO: pozri to tu tiez
+            
             int written = Encoding.ASCII.GetBytes(requestMessageString, 0, requestMessageString.Length, _buffer, 0);
-            return WriteAsync(_buffer, 0, written);
+            return WriteAsync(_buffer, 0, written);//TOdo:send
         }
 
         public abstract void Dispose();
@@ -188,61 +188,50 @@ namespace RtspClientSharp.Rtsp
                 totalRead += read;
 
                 //Vypis prijatych dat
-                if(ConnectionParameters.UseBase64 && Global.strictPrint)
-                {
-                    Console.WriteLine("Recv(" + read + "):" + Encoding.UTF8.GetString(_buffer, offset, count));
-                }
-                else
+                if(!Global.strictPrint)
                 {
                     Console.WriteLine("Recv(" + read + ")");
                 }
 
-                //Ziskanie Hpaketu
-                if ((read > 8 || totalRead >= 8) && readNew && ConnectionParameters.Enryption)
+                //Ziskanie velkosti Hpaketu
+                if ((read > 8 || totalRead > 8) && readNew && ConnectionParameters.Enryption)
                 {
-                    //TODO: check if is first 4 null
-                    byte[] lenBytes = new byte[4];
-                    lenBytes = _buffer.Skip(4).Take(len_bytes).ToArray();
-                    readNeeded = BitConverter.ToUInt32(lenBytes, 0);
+                    //todo:posun offset
+                    readNeeded = HexPacket.GetSizeFrom(_buffer, 0, len_bytes);
 
-                    readNew = false;
+                    if (readNeeded != 0)
+                    {
+                        readNew = false;
+                    }
                 }
 
-                var pktSize = totalRead - 4 - len_bytes;
+                var pktSize = totalRead - HexPacket.GetNull().Length - len_bytes;
 
                 //Desifrovanie
                 if ((pktSize == readNeeded/* || totalRead == readNeeded*/) && ConnectionParameters.Enryption && !readNew)
                 {
-                    Console.WriteLine("RecvTotal(" + pktSize + ")");
+
+                    //var readedAfter = await HexNetworkController.decrypt(_buffer, read, 0,
+                    //    ConnectionParameters.Enryption, ConnectionParameters.UseBase64, Global.strictPrint);
+
+                    //if (readedAfter != read)
+                    //{
+                    //    read = readedAfter;
+                    //}
+                    //Console.WriteLine("RecvTotal(" + pktSize + ")");
 
                     byte[] toDecrypt = new byte[totalRead];
                     Buffer.BlockCopy(_buffer, 0, toDecrypt, 0, totalRead);
-                    HexPacket hexPacket = new HexPacket(toDecrypt, ConnectionParameters.UseBase64);
-
-                    //TODO: zmensit kod
-                    if (ConnectionParameters.UseBase64)
-                    {//USE BASE 64 decryption
-                        string decrypted = (string)hexPacket.Decrypt();
-                        //clear default buffer
-                        Array.Clear(_buffer, 0, totalRead);
-                        //convert to byte array
-                        var tmp = Encoding.UTF8.GetBytes(decrypted);
-                        //Copy back to buffer
-                        Buffer.BlockCopy(tmp, 0, _buffer, 0, decrypted.Length);
-                        //Correct read sizes
-                        correctRead(ref read, ref totalRead, ref offset, decrypted.Length);
-                    }
-                    else //if (ConnectionParameters.UseBase64)
-                    {//USE BYTE DECRYPTION
-                        
-                        byte[] decrypted = (byte[])hexPacket.Decrypt();
-                        //clear default buffer
-                        Array.Clear(_buffer, 0, totalRead);
-                        //Copy back to buffer
-                        Buffer.BlockCopy(decrypted, 0, _buffer, 0, decrypted.Length);
-                        //Correct read sizes
-                        correctRead(ref read, ref totalRead, ref offset, decrypted.Length);
-                    }
+                    HexPacket hexPacket = new HexPacket(toDecrypt, ConnectionParameters.UseBase64, EncryptType.Decrypt);
+                    byte[] decrypted = null;
+                    //decrypted
+                    decrypted = (byte[])hexPacket.Decrypt();
+                    //clear default buffer
+                    Array.Clear(_buffer, 0, totalRead);
+                    //Copy back to buffer
+                    Buffer.BlockCopy(decrypted, 0, _buffer, 0, decrypted.Length);
+                    //Correct read sizes
+                    correctRead(ref read, ref totalRead, ref offset, decrypted.Length);
                 }
 
                 int startIndex = offset - (Constants.DoubleCrlfBytes.Length);

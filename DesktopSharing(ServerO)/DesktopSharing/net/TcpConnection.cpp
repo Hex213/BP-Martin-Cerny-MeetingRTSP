@@ -65,20 +65,47 @@ void TcpConnection::Disconnect()
 	});
 }
 
+#include "Global.h"
+
 void TcpConnection::HandleRead()
 {
 	{
 		std::lock_guard<std::mutex> lock(mutex_);
-
+		int offset = -1;
+		
 		if (is_closed_) {
 			return;
 		}
+
 		
-		int ret = read_buffer_->Read(channel_->GetSocket());
+		int ret = read_buffer_->Read(channel_->GetSocket(), offset);
 		if (ret <= 0) {
 			this->Close();
 			return;
 		}
+
+#if NETWORK_OUTPUT
+		std::cout << "Recv(" << ret << ")" << std::endl;
+		for (int i = 0; i < ret; i++)
+		{
+			std::cout << (int)(read_buffer_->beginWrite() - ret)[i] << "-";
+		}std::cout << std::endl;
+#endif
+#if ENCRYPT_PKT
+		int out_size = 0;
+		auto output = decrypt(read_buffer_->beginWrite() - ret, ret, out_size);
+		if (output == nullptr || out_size == 0)
+		{
+			std::cout << "Decryption failed - " << GetLastCryptoError();
+		}
+		else
+		{
+			memcpy(read_buffer_->Peek(), output, out_size);
+			free(output);
+		}
+#else
+		
+#endif
 	}
 
 	if (read_cb_) {

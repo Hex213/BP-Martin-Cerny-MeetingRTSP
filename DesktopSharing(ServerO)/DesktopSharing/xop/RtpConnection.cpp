@@ -283,8 +283,10 @@ int RtpConnection::SendRtpOverTcp(MediaChannelId channel_id, RtpPacket pkt)
 	rtpPktPtr[2] = (char)(((pkt.size-4)&0xFF00)>>8);
 	rtpPktPtr[3] = (char)((pkt.size -4)&0xFF);
 
+#if NETWORK_OUTPUT
 	std::cout << "SendTCP("<< pkt.size << ")" << std::endl;
-
+#endif
+	
 	conn->Send((char*)rtpPktPtr, pkt.size);
 	return pkt.size;
 }
@@ -297,12 +299,14 @@ int RtpConnection::SendRtpOverUdp(MediaChannelId channel_id, RtpPacket pkt)
 	
 	//Encryption for data(udp)
 #if ENCRYPT_PKT
-	HexPacket* hpkt = new HexPacket(reinterpret_cast<char*>(pkt.data.get() + 4), pkt.size - 4, 0);
-	hpkt->encryptPacket();
+	HexPacket* hpkt = new HexPacket(reinterpret_cast<char*>(pkt.data.get() + 4), pkt.size - 4, 0, Packet_type::Encrypt);
+	hpkt->EncryptPacket();
 	size_t send_data_bytes = 0;
-	const auto* send_data = hpkt->getDataToSend(send_data_bytes);
+	const auto* send_data = hpkt->GetDataToSend(send_data_bytes);
 
+#if NETWORK_OUTPUT
 	std::cout << "SendUDP(" << send_data_bytes << ")/clear(" << pkt.size - 4 << ")" << std::endl;
+#endif
 	ret = sendto(rtpfd_[channel_id], send_data, send_data_bytes, 0,
 		(struct sockaddr*)&(peer_rtp_addr_[channel_id]),
 		sizeof(struct sockaddr_in));
@@ -310,23 +314,18 @@ int RtpConnection::SendRtpOverUdp(MediaChannelId channel_id, RtpPacket pkt)
 	delete[] send_data;
 	free(hpkt);
 #else
+#if NETWORK_OUTPUT
 	std::cout << "SendUDP(" << pkt.size - 4 << ")" << std::endl;
+#endif
 	ret = sendto(rtpfd_[channel_id], (const char*)pkt.data.get()+4, pkt.size-4, 0, 
 					(struct sockaddr *)&(peer_rtp_addr_[channel_id]),
 					sizeof(struct sockaddr_in));
 #endif
 
-
-	//TODO: correct ret value
 	if(ret < 0) {        
 		Teardown();
 		return -1;
 	}
-
-	/*if(ret == hpkt->get_size())
-	{
-		
-	}*/
 	
 	return ret;
 }
