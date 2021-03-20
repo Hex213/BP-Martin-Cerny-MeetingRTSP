@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
 
-namespace LibUIAcademy.XanderUI
+namespace LibUIAcademyFramework.XanderUI
 {
     public class XUICustomToolstrip : ToolStrip
     {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms.Design;
-using LibUIAcademy.XanderUI;
+using LibUIAcademyFramework.XanderUI;
 
 namespace LibUIAcademy.Designers
 {

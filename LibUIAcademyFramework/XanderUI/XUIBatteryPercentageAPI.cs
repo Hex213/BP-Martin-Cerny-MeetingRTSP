@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Forms;
 
-namespace LibUIAcademy.XanderUI
+namespace LibUIAcademyFramework.XanderUI
 {
     public class XUIBatteryPercentageAPI : Timer
     {

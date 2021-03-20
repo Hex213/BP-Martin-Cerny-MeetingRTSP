@@ -3,6 +3,7 @@ using LibHexCryptoStandard.Packet;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using LibHexCryptoStandard.Packet.AES;
 
 namespace LibHexCryptoStandard.Packet.Tests
 {
@@ -12,7 +13,7 @@ namespace LibHexCryptoStandard.Packet.Tests
         [TestMethod()]
         public void GetNullTest()
         {
-            var bytes = HexPacket.GetNull();
+            var bytes = HexPacketConstants.nullBytes;
             Assert.IsNotNull(bytes);
         }
 

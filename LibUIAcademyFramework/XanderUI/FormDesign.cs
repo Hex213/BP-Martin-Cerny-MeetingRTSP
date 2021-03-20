@@ -6,7 +6,7 @@ using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using LibUIAcademy.Designers;
 
-namespace LibUIAcademy.XanderUI
+namespace LibUIAcademyFramework.XanderUI
 {
     [Designer(typeof(FormDesigner))]
     public class XUIFormDesign : Panel

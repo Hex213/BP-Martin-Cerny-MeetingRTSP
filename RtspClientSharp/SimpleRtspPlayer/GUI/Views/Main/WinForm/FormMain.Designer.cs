@@ -1,4 +1,6 @@
 ﻿
+using LibUIAcademyFramework.XanderUI;
+
 namespace SimpleRtspPlayer.GUI.Views.Main.WinForm
 {
     partial class FormMain
@@ -30,8 +32,8 @@ namespace SimpleRtspPlayer.GUI.Views.Main.WinForm
         private void InitializeComponent()
         {
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.butConnect = new LibUIAcademy.XanderUI.XUIButton();
-            this.butCreate = new LibUIAcademy.XanderUI.XUIButton();
+            this.butConnect = new XUIButton();
+            this.butCreate = new XUIButton();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -60,7 +62,7 @@ namespace SimpleRtspPlayer.GUI.Views.Main.WinForm
             // 
             this.butConnect.BackgroundColor = System.Drawing.Color.WhiteSmoke;
             this.butConnect.ButtonImage = global::SimpleRtspPlayer.Properties.Resources.ConnectImg;
-            this.butConnect.ButtonStyle = LibUIAcademy.XanderUI.XUIButton.Style.MaterialRounded;
+            this.butConnect.ButtonStyle = XUIButton.Style.MaterialRounded;
             this.butConnect.ButtonText = "ButtonCon";
             this.butConnect.ClickBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
             this.butConnect.ClickTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(125)))), ((int)(((byte)(130)))), ((int)(((byte)(140)))));
@@ -70,7 +72,7 @@ namespace SimpleRtspPlayer.GUI.Views.Main.WinForm
             this.butConnect.Horizontal_Alignment = System.Drawing.StringAlignment.Center;
             this.butConnect.HoverBackgroundColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
             this.butConnect.HoverTextColor = System.Drawing.Color.Black;
-            this.butConnect.ImagePosition = LibUIAcademy.XanderUI.XUIButton.imgPosition.Left;
+            this.butConnect.ImagePosition = XUIButton.imgPosition.Left;
             this.butConnect.Location = new System.Drawing.Point(35, 17);
             this.butConnect.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.butConnect.Name = "butConnect";
@@ -85,7 +87,7 @@ namespace SimpleRtspPlayer.GUI.Views.Main.WinForm
             // 
             this.butCreate.BackgroundColor = System.Drawing.Color.WhiteSmoke;
             this.butCreate.ButtonImage = global::SimpleRtspPlayer.Properties.Resources.CreateImg;
-            this.butCreate.ButtonStyle = LibUIAcademy.XanderUI.XUIButton.Style.MaterialRounded;
+            this.butCreate.ButtonStyle = XUIButton.Style.MaterialRounded;
             this.butCreate.ButtonText = "ButtonCreate";
             this.butCreate.ClickBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
             this.butCreate.ClickTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(125)))), ((int)(((byte)(130)))), ((int)(((byte)(140)))));
@@ -95,7 +97,7 @@ namespace SimpleRtspPlayer.GUI.Views.Main.WinForm
             this.butCreate.Horizontal_Alignment = System.Drawing.StringAlignment.Center;
             this.butCreate.HoverBackgroundColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
             this.butCreate.HoverTextColor = System.Drawing.Color.Black;
-            this.butCreate.ImagePosition = LibUIAcademy.XanderUI.XUIButton.imgPosition.Left;
+            this.butCreate.ImagePosition = XUIButton.imgPosition.Left;
             this.butCreate.Location = new System.Drawing.Point(35, 162);
             this.butCreate.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.butCreate.Name = "butCreate";
@@ -127,7 +129,7 @@ namespace SimpleRtspPlayer.GUI.Views.Main.WinForm
         #endregion
 
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-        private LibUIAcademy.XanderUI.XUIButton butConnect;
-        private LibUIAcademy.XanderUI.XUIButton butCreate;
+        private XUIButton butConnect;
+        private XUIButton butCreate;
     }
 }

@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Security;
 using System.Security.Cryptography;
 using System.Text;
+using LibHexCryptoStandard.Hashs;
 using LibHexCryptoStandard.Packet;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
@@ -15,11 +16,9 @@ namespace LibHexCryptoStandard.Algoritm
     public class AesGcm256
     {
         public static byte[] Key => key;
-        public static byte[] Iv => iv;
 
         private static readonly SecureRandom Random = new SecureRandom();
         private static byte[] key = null;
-        private static byte[] iv = null;
 
         // Pre-configured Encryption Parameters
         public static readonly int NonceBitSize = 128;
@@ -31,27 +30,22 @@ namespace LibHexCryptoStandard.Algoritm
         }
 
         /// <summary>
-        /// Initialization function for encrypt/decrypt
+        /// Initialize function with any key. Transform string key with SHA3 to 256 bit key.
         /// </summary>
-        /// <param name="key">key (hexa format)</param>
-        /// <param name="iv">iv (hexa format)</param>
-        public static void init(string key, string iv)
+        /// <param name="key">Input key</param>
+        public static void init(string key)
         {
-            if (key.Length != 64 || iv.Length != 32)
+            if (key.Length == 0)
             {
-                throw new TypeInitializationException("key or iv has not correct len(hex format)", null);
+                throw new TypeInitializationException("key", new Exception("Key length != 0"));
             }
-            AesGcm256.key = AesGcm256.HexToByte(key);
-            AesGcm256.iv = AesGcm256.HexToByte(iv);
+            AesGcm256.key = SHA.SHA3(key, 256);
         }
 
-        public static byte[] NewKey()
-        {
-            var key = new byte[KeyBitSize / 8];
-            Random.NextBytes(key);
-            return key;
-        }
-
+        /// <summary>
+        /// Generate new random IV with defined size
+        /// </summary>
+        /// <returns>Byte array with IV</returns>
         public static byte[] NewIv()
         {
             var iv = new byte[NonceBitSize / 8];
@@ -59,16 +53,16 @@ namespace LibHexCryptoStandard.Algoritm
             return iv;
         }
 
-        public static Byte[] HexToByte(string hexStr)
+        public static byte[] HexToByte(string hexStr)
         {
-            byte[] bArray = new byte[hexStr.Length / 2];
+            var bArray = new byte[hexStr.Length / 2];
             for (int i = 0; i < (hexStr.Length / 2); i++)
             {
-                byte firstNibble = Byte.Parse(hexStr.Substring((2 * i), 1),
+                var firstNibble = Byte.Parse(hexStr.Substring((2 * i), 1),
                     System.Globalization.NumberStyles.HexNumber); // [x,y)
-                byte secondNibble = Byte.Parse(hexStr.Substring((2 * i) + 1, 1),
+                var secondNibble = Byte.Parse(hexStr.Substring((2 * i) + 1, 1),
                     System.Globalization.NumberStyles.HexNumber);
-                int finalByte = (secondNibble) | (firstNibble << 4); // bit-operations 
+                var finalByte = (secondNibble) | (firstNibble << 4); // bit-operations 
                 // only with numbers, not bytes.
                 bArray[i] = (byte)finalByte;
             }
@@ -76,57 +70,46 @@ namespace LibHexCryptoStandard.Algoritm
             return bArray;
         }
 
-        public static string toHex(byte[] data)
+        /// <summary>
+        /// Encrypt block of data with key and random iv. This function must be initialized before use!
+        /// </summary>
+        /// <param name="block">Data to encrypt</param>
+        /// <returns>Encrypted byte array. </returns>
+        /// <exception cref="TypeInitializationException">Throws when is not initialized key.</exception>
+        /// <exception cref="PacketException">Throws when is missing input data.</exception>
+        public static byte[] Encrypt(byte[] block)
         {
-            string hex = string.Empty;
-            foreach (byte c in data)
+            if (key == null)
             {
-                hex += c.ToString("X2");
+                throw new TypeInitializationException("key", new Exception("Missing initialization!"));
             }
 
-            return hex;
-        }
-
-        public static string toHex(string asciiString)
-        {
-            string hex = string.Empty;
-            foreach (char c in asciiString)
-            {
-                int tmp = c;
-                hex += string.Format("{0:x2}", System.Convert.ToUInt32(tmp.ToString()));
-            }
-
-            return hex;
-        }
-
-        public static byte[] encrypt(byte[] block)
-        {
-            if (key == null || iv == null)
-            {
-                throw new TypeInitializationException("Not initialized!", null);
-            }
-            string sR = string.Empty;
+            var sR = string.Empty;
             try
             {
-                byte[] plainBytes = block;
+                var plainBytes = block;
                 if (block == null || block.Length == 0)
                 {
-                    throw new PacketException("Input dta missing!");
+                    throw new PacketException("Input data missing!");
                 }
 
                 GcmBlockCipher cipher = new GcmBlockCipher(new AesFastEngine());
+                var iv = NewIv();
                 AeadParameters parameters =
                     new AeadParameters(new KeyParameter(key), 128, iv, null);
 
                 cipher.Init(true, parameters);
 
-                byte[] encryptedBytes = new byte[cipher.GetOutputSize(plainBytes.Length)];
+                byte[] encryptedBytes = new byte[iv.Length + cipher.GetOutputSize(plainBytes.Length)];
+
+                //copy iv
+                Buffer.BlockCopy(iv, 0, encryptedBytes, 0, iv.Length);
+                //encrypt
                 Int32 retLen = cipher.ProcessBytes
-                    (plainBytes, 0, plainBytes.Length, encryptedBytes, 0);
-                cipher.DoFinal(encryptedBytes, retLen);
+                    (plainBytes, 0, plainBytes.Length, encryptedBytes, iv.Length);
+                cipher.DoFinal(encryptedBytes, iv.Length);
 
                 return encryptedBytes;
-                //sR = Convert.ToBase64String(encryptedBytes, Base64FormattingOptions.None);
             }
             catch (Exception ex)
             {
@@ -137,23 +120,23 @@ namespace LibHexCryptoStandard.Algoritm
             return null;
         }
 
-        /// <summary>
-        /// Decrypt data with key and IV, which was set by init method<see cref=""/>. If block has non-value, then use Base64 format 
-        /// </summary>
-        /// <param name="EncryptedText">string to decrypt (for Base64 format)</param>
-        /// <param name="block">bytes to decrypt (for Byte format)</param>
-        /// <returns></returns>
-        public static Object decrypt(string EncryptedText/*, byte[] key, byte[] iv*/, byte[] block = null)
+        public static Object Decrypt(string EncryptedText, byte[] block = null)
         {
-            if (key == null || iv == null)
+            if (key == null)
             {
                 throw new TypeInitializationException("Not initialized!", null);
             }
-            string sR = string.Empty;
+
+            var sR = string.Empty;
+
             try
             {
-                byte[] encryptedBytes;
-                encryptedBytes = block ?? Convert.FromBase64String(EncryptedText);
+                var encryptedBytes = block ?? Convert.FromBase64String(EncryptedText);
+
+                byte[] iv = new byte[NonceBitSize / 8];
+                byte[] data = new byte[encryptedBytes.Length - NonceBitSize / 8];
+                Buffer.BlockCopy(encryptedBytes, 0, iv, 0, NonceBitSize / 8);
+                Buffer.BlockCopy(encryptedBytes, NonceBitSize / 8, data, 0, encryptedBytes.Length - (NonceBitSize / 8));
 
                 GcmBlockCipher cipher = new GcmBlockCipher(new AesFastEngine());
                 AeadParameters parameters =
@@ -161,9 +144,9 @@ namespace LibHexCryptoStandard.Algoritm
                 //ParametersWithIV parameters = new ParametersWithIV(new KeyParameter(key), iv);
 
                 cipher.Init(false, parameters);
-                byte[] plainBytes = new byte[cipher.GetOutputSize(encryptedBytes.Length)];
+                byte[] plainBytes = new byte[cipher.GetOutputSize(data.Length)];
                 Int32 retLen = cipher.ProcessBytes
-                    (encryptedBytes, 0, encryptedBytes.Length, plainBytes, 0);
+                    (data, 0, data.Length, plainBytes, 0);
                 cipher.DoFinal(plainBytes, retLen);
 
                 return plainBytes;

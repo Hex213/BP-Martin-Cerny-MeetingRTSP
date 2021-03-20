@@ -4,6 +4,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using LibHexCryptoStandard.Packet.AES;
 
 namespace LibHexCryptoStandard.Packet
 {
@@ -13,7 +14,7 @@ namespace LibHexCryptoStandard.Packet
         {
             if (output) Console.WriteLine("Recv(" + read + ")");
 
-            HexPacket hexPacket = null;
+            HexPacketAES hexPacketAes = null;
 
             if (!decryptData)
             {
@@ -22,14 +23,14 @@ namespace LibHexCryptoStandard.Packet
 
             //todo: nastava chyba
             //1. get packet
-            hexPacket = HexPacket.GetPacketFromArr(readBuffer, (ushort)offset, useBase64);
+            hexPacketAes = HexPacketAES.GetDataFromPacket(readBuffer, (ushort)offset, useBase64);
             //2. decrypt
-            Object decrypted = hexPacket.Decrypt();
+            Object decrypted = hexPacketAes.Decrypt();
             byte[] toCopy = (byte[])decrypted;
             //3. copy back to buffer
-            Buffer.BlockCopy(toCopy, 0, readBuffer, offset, (int)hexPacket.DecryptedBytesSize);
+            Buffer.BlockCopy(toCopy, 0, readBuffer, offset, (int)hexPacketAes.DecryptedBytesSize);
             //4. return of readed
-            return (int)hexPacket.DecryptedBytesSize;
+            return (int)hexPacketAes.DecryptedBytesSize;
         }
 
         public static async Task<int> Read(Stream stream, byte[] readBuffer, int offset, bool decryptData, bool useBase64, bool output = false, int count = -1)

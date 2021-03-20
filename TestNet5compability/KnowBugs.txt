@@ -1,2 +1,1 @@
-﻿TCP-no video frame (encryption)- pravdeodobne zle implem. tcp enc /ooffset (c++/c) - rozbehne sa pri base64
-getpacketfromarray - vyhodi vynimku občas
+﻿getpacketfromarray - vyhodi vynimku občas

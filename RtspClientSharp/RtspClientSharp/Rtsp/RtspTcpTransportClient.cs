@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using LibHexCryptoStandard.Packet;
+using LibHexCryptoStandard.Packet.AES;
 using LibRtspClientSharp.Hex;
 using RtspClientSharp.Utils;
 
@@ -76,7 +77,7 @@ namespace RtspClientSharp.Rtsp
             {
                 byte[] bytes = new byte[count];
                 Buffer.BlockCopy(buffer, offset, bytes, 0, count);
-                var hexPacket = HexPacket.CreatePacket(bytes, ConnectionParameters.UseBase64);
+                var hexPacket = HexPacketAES.CreatePacketToEncrypt(bytes, ConnectionParameters.UseBase64);
                 var toSend = (byte[])hexPacket.Encrypt();
                 Buffer.BlockCopy(toSend, 0, buffer, offset, toSend.Length);
                 count = toSend.Length;

@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using LibHexCryptoStandard.Packet;
+using LibHexCryptoStandard.Packet.AES;
 using RtspClientSharp.Utils;
 
 namespace RtspClientSharp.Tpkt
@@ -97,7 +98,7 @@ namespace RtspClientSharp.Tpkt
                 Buffer.BlockCopy(payloadSegment.Array, payloadSegment.Offset, _writeBuffer, TpktHeader.Size,
                     payloadSegment.Count);
 
-                var hexPacket = HexPacket.CreatePacket(_writeBuffer, _conParam.UseBase64);
+                var hexPacket = HexPacketAES.CreatePacketToEncrypt(_writeBuffer, _conParam.UseBase64);
                 byte[] dataToSend = (byte[])hexPacket.Encrypt();
                 
                 Console.WriteLine("SendTCP("+ dataToSend.Length + ")");

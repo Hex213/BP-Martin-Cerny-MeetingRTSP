@@ -1,6 +1,3 @@
-﻿1. opravit know bugs
-2. pridat encrypt send // c#
-3. pridat decrypt recv // c++
-4. pridat RSA encryption // c#
+﻿4. pridat RSA encryption // c#
 5. vytvorit prijmutie pripojenia // C#
 6. vytvorit proxy server // c#/c++

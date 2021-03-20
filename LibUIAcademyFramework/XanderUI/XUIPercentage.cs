@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LibUIAcademy.XanderUI
+namespace LibUIAcademyFramework.XanderUI
 {
     public static class XUIPercentage
     {

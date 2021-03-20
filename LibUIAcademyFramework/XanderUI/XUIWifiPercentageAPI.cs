@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Forms;
 
-namespace LibUIAcademy.XanderUI
+namespace LibUIAcademyFramework.XanderUI
 {
     public class XUIWifiPercentageAPI : Timer
     {

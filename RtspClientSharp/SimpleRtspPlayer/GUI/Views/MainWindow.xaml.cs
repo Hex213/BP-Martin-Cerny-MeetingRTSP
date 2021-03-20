@@ -25,12 +25,6 @@ namespace SimpleRtspPlayer.GUI.Views
         private Connect1 _pageConnect = null;
         private Create_1 _pageCreate = null;
 
-        
-
-        
-
-        
-
         public MainWindow()
         {
             InitializeComponent();

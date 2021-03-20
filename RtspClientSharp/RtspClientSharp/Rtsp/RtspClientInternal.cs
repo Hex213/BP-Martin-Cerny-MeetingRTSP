@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using LibHexCryptoStandard.Algoritm;
 using LibHexCryptoStandard.Packet;
+using LibHexCryptoStandard.Packet.AES;
 using LibRtspClientSharp.Hex;
 using Org.BouncyCastle.Asn1.Cmp;
 using RtspClientSharp.Codecs.Audio;
@@ -574,12 +575,12 @@ namespace RtspClientSharp.Rtsp
             {
                 int read = await client.ReceiveAsync(bufferSegment, SocketFlags.None);
                 byte[] toProcess = null;
-                HexPacket hexPacket = null;
+                HexPacketAES hexPacketAes = null;
 
-                DecryptData(read, bufferSegment, ref hexPacket, ref toProcess);
+                DecryptData(read, bufferSegment, ref hexPacketAes, ref toProcess);
 
-                var payloadSegment = hexPacket != null
-                    ? new ArraySegment<byte>(toProcess, 0, (int)hexPacket.DecryptedBytesSize)
+                var payloadSegment = hexPacketAes != null
+                    ? new ArraySegment<byte>(toProcess, 0, (int)hexPacketAes.DecryptedBytesSize)
                     : new ArraySegment<byte>(readBuffer, 0, read);
 
                 //var outbytes = await HexNetworkController.ReadBySocket(client, bufferSegment, 0, _connectionParameters.Enryption,
@@ -630,7 +631,7 @@ namespace RtspClientSharp.Rtsp
             return new ArraySegment<byte>(streamBuffer, 0, (int)bufferStream.Position);
         }
         //todo: mozno nepotrebne
-        private void DecryptData(in int read, in ArraySegment<byte> bufferSegment, ref HexPacket hexPacket, ref byte[] toProcess)
+        private void DecryptData(in int read, in ArraySegment<byte> bufferSegment, ref HexPacketAES hexPacketAes, ref byte[] toProcess)
         {
             //Vypis
             if (_connectionParameters.UseBase64 && !Global.strictPrint)
@@ -639,7 +640,7 @@ namespace RtspClientSharp.Rtsp
                                   Encoding.UTF8.GetString(
                                       Convert.FromBase64String(
                                           Encoding.UTF8
-                                              .GetString(bufferSegment)))); //.GetString(bufferSegment.Array, 0, read));
+                                              .GetString(bufferSegment.Array, 0, bufferSegment.Array.Length)))); //.GetString(bufferSegment.Array, 0, read));
             }
             else
             {
@@ -653,9 +654,9 @@ namespace RtspClientSharp.Rtsp
             if (!_connectionParameters.Enryption || read <= 8) return;
             var toDecryptBytes = new byte[read];
             Buffer.BlockCopy(bufferSegment.Array, 0, toDecryptBytes, 0, read);
-            hexPacket = new HexPacket(toDecryptBytes, _connectionParameters.UseBase64, EncryptType.Decrypt);
+            hexPacketAes = new HexPacketAES(toDecryptBytes, _connectionParameters.UseBase64, EncryptType.Decrypt);
 
-            toProcess = (byte[]) hexPacket.Decrypt();
+            toProcess = (byte[]) hexPacketAes.Decrypt();
         }
     }
 }

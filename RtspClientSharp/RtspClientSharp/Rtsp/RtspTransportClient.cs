@@ -9,9 +9,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using LibHexCryptoStandard.Algoritm;
 using LibHexCryptoStandard.Packet;
+using LibHexCryptoStandard.Packet.AES;
 using LibRtspClientSharp.Hex;
 using RtspClientSharp.Rtsp.Authentication;
 using RtspClientSharp.Utils;
+
+using c = LibHexCryptoStandard.Packet.HexPacketConstants;
 
 namespace RtspClientSharp.Rtsp
 {
@@ -146,9 +149,8 @@ namespace RtspClientSharp.Rtsp
         {
             if(read > 1)
             {
-                totalRead -= read;
                 read = decrypted;
-                totalRead += read;
+                totalRead = read;
             }
             else
             {
@@ -196,16 +198,27 @@ namespace RtspClientSharp.Rtsp
                 //Ziskanie velkosti Hpaketu
                 if ((read > 8 || totalRead > 8) && readNew && ConnectionParameters.Enryption)
                 {
-                    //todo:posun offset
-                    readNeeded = HexPacket.GetSizeFrom(_buffer, 0, len_bytes);
+                    try
+                    {
+                        readNeeded = ReadNeed();
 
-                    if (readNeeded != 0)
+                        uint ReadNeed()
+                        {
+                            //Span<byte> bytes = _buffer;
+                            return HexPacket.GetSize(_buffer, HexPacket.Search(_buffer, c.nullBytes)/*bytes.IndexOf(HexPacket.GetNullBytes)*/);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
+                    finally
                     {
                         readNew = false;
                     }
                 }
 
-                var pktSize = totalRead - HexPacket.GetNull().Length - len_bytes;
+                var pktSize = totalRead - c.GetNullSize - len_bytes;
 
                 //Desifrovanie
                 if ((pktSize == readNeeded/* || totalRead == readNeeded*/) && ConnectionParameters.Enryption && !readNew)
@@ -222,10 +235,10 @@ namespace RtspClientSharp.Rtsp
 
                     byte[] toDecrypt = new byte[totalRead];
                     Buffer.BlockCopy(_buffer, 0, toDecrypt, 0, totalRead);
-                    HexPacket hexPacket = new HexPacket(toDecrypt, ConnectionParameters.UseBase64, EncryptType.Decrypt);
+                    HexPacketAES hexPacketAes = new HexPacketAES(toDecrypt, ConnectionParameters.UseBase64, EncryptType.DecryptPacket);
                     byte[] decrypted = null;
                     //decrypted
-                    decrypted = (byte[])hexPacket.Decrypt();
+                    decrypted = (byte[])hexPacketAes.Decrypt();
                     //clear default buffer
                     Array.Clear(_buffer, 0, totalRead);
                     //Copy back to buffer

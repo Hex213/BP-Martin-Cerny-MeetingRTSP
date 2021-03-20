@@ -1,4 +1,4 @@
-﻿namespace LibUIAcademy.XanderUI
+﻿namespace LibUIAcademyFramework.XanderUI
 {
     public static class XUIIntRound
     {
