@@ -3,186 +3,121 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
+using LibNet.Base;
 using LibNet.Utils;
 
 namespace LibNet.UDP
 {
-    public class Client
+    public class Client : ClientBase
     {
-        // The port number for the remote device.  
-        private int port;
-        private IPAddress ipAddress;
-        private Socket client;
+        private IPEndPoint _serverEndPoint;
+        private UdpClient client;
 
-        // ManualResetEvent instances signal completion.  
-        private ManualResetEvent connectDone =
-            new ManualResetEvent(false);
-
-        private ManualResetEvent sendDone =
-            new ManualResetEvent(false);
-
-        private ManualResetEvent receiveDone =
-            new ManualResetEvent(false);
-
-        // The response from the remote device.  
-        private String response = String.Empty;
+        public bool messageSent = false;
+        public bool messageReceived = false;
+        private bool started = false;
 
         public Client()
         {
+            client = new UdpClient();
         }
 
-        public void Connect(IPAddress ipAddress, int port)
+        public override void Connect(IPAddress ip, int port)
         {
-            this.port = port;
-            this.ipAddress = ipAddress;
-
-            // Connect to a remote device.  
-            try
-            {
-                IPEndPoint remoteEP = new IPEndPoint(ipAddress, port);
-
-                // Create a TCP/IP socket.  
-                client = new Socket(ipAddress.AddressFamily,
-                    SocketType.Dgram, ProtocolType.Udp);
-
-                // Connect to the remote endpoint.  
-                client.BeginConnect(remoteEP,
-                    new AsyncCallback(ConnectCallback), client);
-                connectDone.WaitOne();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
+            _serverEndPoint = new IPEndPoint(ip, port);
+            client.Connect(_serverEndPoint);
         }
 
-        public void SendTest()
-        {
-            Send(client, "This is a test<EOF>");
-            sendDone.WaitOne();
-        }
-
-        public void Receive()
-        {
-            Console.WriteLine("Response received : {0}", response);
-            Receive(client);
-            receiveDone.WaitOne();
-        }
-
-        public void Disconnect()
-        {
-            client.Shutdown(SocketShutdown.Both);
-            client.Close();
-        }
-
-        private void ConnectCallback(IAsyncResult ar)
+        public override bool IsConnected()
         {
             try
             {
-                // Retrieve the socket from the state object.  
-                Socket client = (Socket)ar.AsyncState;
-
-                // Complete the connection.  
-                client.EndConnect(ar);
-
-                Console.WriteLine("Socket connected to {0}",
-                    client.RemoteEndPoint.ToString());
-
-                // Signal that the connection has been made.  
-                connectDone.Set();
+                Send(new byte[] { 103, 111, 100 });
+                return messageSent;
             }
-            catch (Exception e)
+            catch (ObjectDisposedException )
             {
-                Console.WriteLine(e.ToString());
+                return false;
             }
         }
 
-        private void Receive(Socket client)
+        public override void Send(byte[] bytes)
         {
-            try
-            {
-                // Create the state object.  
-                var state = new State();
-                state.workSocket = client;
+            messageSent = false;
+            byte[] sendBytes = bytes;
 
-                // Begin receiving the data from the remote device.  
-                client.BeginReceive(state.buffer, 0, state.BufferSize, 0,
-                    new AsyncCallback(ReceiveCallback), state);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
+            var sended = client.Send(sendBytes, sendBytes.Length);
+            PrintNet.printSend(client.Client, sended);
+
         }
 
-        private void ReceiveCallback(IAsyncResult ar)
+        public void SendCallback(IAsyncResult ar)
         {
-            try
+            UdpClient u = (UdpClient)ar.AsyncState;
+
+            Console.WriteLine($"number of bytes sent: {u.EndSend(ar)}");
+            messageSent = true;
+        }
+
+        public override object Receive()
+        {
+            // Receive a message and write it to the console.
+            IPEndPoint e = _serverEndPoint;
+
+            var s = new UDPState();
+            s.e = e;
+            s.u = client;
+
+            Console.WriteLine("listening for messages");
+            client.BeginReceive(new AsyncCallback(ReceiveCallback), s);
+
+            // Do some work while we wait for a message. For this example, we'll just sleep
+            while (!messageReceived)
             {
-                // Retrieve the state object and the client socket
-                // from the asynchronous state object.  
-                var state = (State)ar.AsyncState;
-                Socket client = state.workSocket;
+                Thread.Sleep(100);
+            }
 
-                // Read data from the remote device.  
-                int bytesRead = client.EndReceive(ar);
+            return s;
+        }
 
-                if (bytesRead > 0)
+        public void ReceiveCallback(IAsyncResult ar)
+        {
+            var state = (UDPState) (ar.AsyncState);
+            UdpClient u = state.u;
+            IPEndPoint e = state.e;
+
+            state.buffer = u.EndReceive(ar, ref e);
+
+            PrintNet.printRead(u.Client.LocalEndPoint, e, state.Buffer.Length);
+            state.e = e;
+            messageReceived = true;
+        }
+
+        public override void Release()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void StartReceivingFromServerMeeting()
+        {
+            if (started)
+            {
+                return;
+            }
+
+            started = !started;
+
+            Task.Run(() =>
+            {
+                while (true)
                 {
-                    // There might be more data, so store the data received so far.  
-                    state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
-
-                    // Get the rest of the data.  
-                    client.BeginReceive(state.buffer, 0, state.BufferSize, 0,
-                        new AsyncCallback(ReceiveCallback), state);
+                    var state = (UDPState) Receive();
+                    return;
                 }
-                else
-                {
-                    // All the data has arrived; put it in response.  
-                    if (state.sb.Length > 1)
-                    {
-                        response = state.sb.ToString();
-                    }
-
-                    // Signal that all bytes have been received.  
-                    receiveDone.Set();
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-        }
-
-        private void Send(Socket client, String data)
-        {
-            // Convert the string data to byte data using ASCII encoding.  
-            byte[] byteData = Encoding.ASCII.GetBytes(data);
-
-            // Begin sending the data to the remote device.  
-            client.BeginSend(byteData, 0, byteData.Length, 0,
-                new AsyncCallback(SendCallback), client);
-        }
-
-        private void SendCallback(IAsyncResult ar)
-        {
-            try
-            {
-                // Retrieve the socket from the state object.  
-                Socket client = (Socket)ar.AsyncState;
-
-                // Complete sending the data to the remote device.  
-                int bytesSent = client.EndSend(ar);
-                Console.WriteLine("{1}:Sent {0} bytes to server.", bytesSent, client.LocalEndPoint);
-
-                // Signal that all bytes have been sent.  
-                sendDone.Set();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
+            });
         }
     }
 }

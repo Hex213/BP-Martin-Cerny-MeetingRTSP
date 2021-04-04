@@ -78,7 +78,7 @@ namespace RtspClientSharp.Rtsp
                 byte[] bytes = new byte[count];
                 Buffer.BlockCopy(buffer, offset, bytes, 0, count);
                 var hexPacket = HexPacketAES.CreatePacketToEncrypt(bytes, ConnectionParameters.UseBase64);
-                var toSend = (byte[])hexPacket.Encrypt();
+                var toSend = (byte[])hexPacket.Encrypt(null);
                 Buffer.BlockCopy(toSend, 0, buffer, offset, toSend.Length);
                 count = toSend.Length;
             }

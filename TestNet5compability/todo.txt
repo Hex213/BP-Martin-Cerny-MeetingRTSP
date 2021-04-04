@@ -1,3 +1,7 @@
-﻿4. pridat RSA encryption // c#
-5. vytvorit prijmutie pripojenia // C#
-6. vytvorit proxy server // c#/c++
+﻿6. vytvorit proxy server // c#
+	6a. network manager
+	6b. sending confirm
+	6c. admin system
+7. create controll stream
+8. test
+9. refactor

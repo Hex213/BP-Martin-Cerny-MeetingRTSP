@@ -11,19 +11,15 @@ namespace LibNet.UDP
     {
         private readonly int mainPort;
         private IPAddress mainIP;
-        private Dictionary<string, Session> sessions;
 
         public int MainPort => mainPort;
 
         public IPAddress MainIp => mainIP;
 
-        public Dictionary<string, Session> Sessions => sessions;
-
         public Server(IPAddress mainIp, int mainPort)
         {
             this.mainPort = mainPort;
             mainIP = mainIp;
-            sessions = new Dictionary<string, Session>(5);
         }
 
         public async Task StartMainServer()

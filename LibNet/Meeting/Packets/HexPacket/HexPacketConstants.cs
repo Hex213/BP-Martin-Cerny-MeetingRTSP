@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LibHexCryptoStandard.Packet
+﻿namespace LibNet.Meeting.Packets.HexPacket
 {
     public class HexPacketConstants
     {

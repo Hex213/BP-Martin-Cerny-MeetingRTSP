@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Org.BouncyCastle.Crypto.Engines;
+using System.Drawing;
+using LibHexUtils.Arrays;
+using LibNet.Meeting.Packets.Exceptions;
+using c = LibNet.Meeting.Packets.HexPacket.HexPacketConstants;
 
-using c = LibHexCryptoStandard.Packet.HexPacketConstants;
-
-namespace LibHexCryptoStandard.Packet
+namespace LibNet.Meeting.Packets.HexPacket
 {
     public enum EncryptType
     {
@@ -17,31 +16,11 @@ namespace LibHexCryptoStandard.Packet
 
     public class HexPacket
     {
-        /// <summary>
-        /// Find sequence in byte array.
-        /// </summary>
-        /// <param name="src">Input data</param>
-        /// <param name="pattern">Data to find</param>
-        /// <param name="offset">Start of searching</param>
-        /// <returns>Return -1 if not found otherwise index of start.</returns>
-        public static int Search(byte[] src, byte[] pattern, int offset = 0)
-        {
-            int c = src.Length - pattern.Length + 1;
-            int j;
-            for (int i = offset; i < c; i++)
-            {
-                if (src[i] != pattern[0]) continue;
-                for (j = pattern.Length - 1; j >= 1 && src[i + j] == pattern[j]; j--) ;
-                if (j == 0) return i;
-            }
-            return -1;
-        }
-
         public static uint GetSize(byte[] data, int offset = 0)
         {
             var start = -1;
 
-            if((start = Search(data, c.nullBytes, offset)) == -1)
+            if((start = ByteArray.Search(data, c.nullBytes, offset)) == -1)
             {
                 throw new PacketException("Cannot find start of packet");
             }
@@ -76,14 +55,14 @@ namespace LibHexCryptoStandard.Packet
             return ret;
         }
 
-        public static byte[] Unpack(byte[] Hpckt, int offset)
+        public static void CheckPacket(byte[] Hpckt, int offset, out uint size, out int start)
         {
             if (Hpckt == null) throw new ArgumentNullException(nameof(Hpckt));
             if (Hpckt.Length - offset <= c.GetSizeSize + c.GetNullSize) throw new ArgumentException("Small size of packet");
             if (offset < 0 || offset > Hpckt.Length) throw new ArgumentException("Bad offset!");
-            
-            uint size = 0;
-            int start = Search(Hpckt, c.nullBytes, offset);
+
+            size = 0;
+            start = ByteArray.Search(Hpckt, c.nullBytes, offset);
 
             if ((size = GetSize(Hpckt, start)) == 0)
             {
@@ -94,6 +73,11 @@ namespace LibHexCryptoStandard.Packet
             {
                 throw new PacketException("Packet size is larger than data!");
             }
+        }
+
+        public static byte[] Unpack(byte[] Hpckt, int offset)
+        {
+            CheckPacket(Hpckt, offset, out var size, out var start);
 
             byte[] outData = new byte[size];
 

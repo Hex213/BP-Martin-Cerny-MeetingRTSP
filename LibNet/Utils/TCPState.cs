@@ -3,7 +3,7 @@ using System.Text;
 
 namespace LibNet.Utils
 {
-    public class State
+    public class TCPState
     {
         // Client socket.  
         public Socket workSocket = null;
@@ -11,14 +11,13 @@ namespace LibNet.Utils
         public readonly int BufferSize;
         // Receive buffer.  
         public byte[] buffer;
-        // Received data string.  
-        public StringBuilder sb;
+        //Total readed/sended bytes
+        public int totalRead;
 
-        public State(int bufferSize = (4 * 1024))
+        public TCPState(int bufferSize = (4 * 1024))
         {
             BufferSize = bufferSize;
             buffer = new byte[BufferSize];
-            sb = new StringBuilder();
         }
 
         public Socket WorkSocket => workSocket;
@@ -27,6 +26,6 @@ namespace LibNet.Utils
 
         public byte[] Buffer => buffer;
 
-        public StringBuilder Sb => sb;
+        public int TotalRead => totalRead;
     }
 }

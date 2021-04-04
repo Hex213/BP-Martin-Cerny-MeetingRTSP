@@ -10,11 +10,13 @@ using System.Threading.Tasks;
 using LibHexCryptoStandard.Algoritm;
 using LibHexCryptoStandard.Packet;
 using LibHexCryptoStandard.Packet.AES;
+using LibHexUtils.Arrays;
+using LibNet.Meeting.Packets.HexPacket;
 using LibRtspClientSharp.Hex;
 using RtspClientSharp.Rtsp.Authentication;
 using RtspClientSharp.Utils;
 
-using c = LibHexCryptoStandard.Packet.HexPacketConstants;
+using c = LibNet.Meeting.Packets.HexPacket.HexPacketConstants;
 
 namespace RtspClientSharp.Rtsp
 {
@@ -205,7 +207,7 @@ namespace RtspClientSharp.Rtsp
                         uint ReadNeed()
                         {
                             //Span<byte> bytes = _buffer;
-                            return HexPacket.GetSize(_buffer, HexPacket.Search(_buffer, c.nullBytes)/*bytes.IndexOf(HexPacket.GetNullBytes)*/);
+                            return HexPacket.GetSize(_buffer, ByteArray.Search(_buffer, c.nullBytes)/*bytes.IndexOf(HexPacket.GetNullBytes)*/);
                         }
                     }
                     catch (Exception e)
@@ -238,7 +240,7 @@ namespace RtspClientSharp.Rtsp
                     HexPacketAES hexPacketAes = new HexPacketAES(toDecrypt, ConnectionParameters.UseBase64, EncryptType.DecryptPacket);
                     byte[] decrypted = null;
                     //decrypted
-                    decrypted = (byte[])hexPacketAes.Decrypt();
+                    decrypted = (byte[])hexPacketAes.Decrypt(null);
                     //clear default buffer
                     Array.Clear(_buffer, 0, totalRead);
                     //Copy back to buffer

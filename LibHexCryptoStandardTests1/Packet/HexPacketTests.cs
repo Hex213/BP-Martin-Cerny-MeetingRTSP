@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using LibHexCryptoStandard.Packet.AES;
+using LibNet.Meeting.Packets;
 
 namespace LibHexCryptoStandard.Packet.Tests
 {

@@ -8,6 +8,9 @@ using LibHexCryptoStandard.Algoritm;
 using LibHexCryptoStandard.Packet;
 using LibHexCryptoStandard.Packet.AES;
 using LibHexCryptoStandard.Packet.RSA;
+using LibNet.Meeting.Packets.HexPacket;
+using LibNet.Meeting.Parsers;
+using LibRtspClientSharp.Hex;
 using Org.BouncyCastle.Crypto.Parameters;
 using RtspClientSharp;
 using RtspClientSharp.Rtsp;
@@ -18,40 +21,64 @@ namespace TestNet5compability
     {
         static void Main()
         {
-            //init
-            AesGcm256.init("test");
-            var aeskey = AesGcm256.Key;
-            var rsakey = RsaOAEP.GenerateKeyPair(2048);
-
-            //encrpt data
-            var data = Encoding.UTF8.GetBytes("Test");
-            var hpdata = new HexPacketAES(data, false, EncryptType.Encrypt);
-            var pkt = (byte[])hpdata.Encrypt();
-
-            //test rsa send key
-            var t = HexPacketRSA.GetKeyToPacket((RsaKeyParameters) rsakey.Public);
-            var r = HexPacketRSA.GetKeyFromPacket(t);
-            //Debug.Assert(((RsaKeyParameters)rsakey.Public).Equals(r), "Diff rsa key");
-
-            //test aes send key
-            var rs = new HexPacketRSA(aeskey);
-            var kdata = rs.Encrypt((RsaKeyParameters) rsakey.Private);
-            var rs1 = new HexPacketRSA(kdata);
-            var dkdata = rs1.Decrypt(r, true);
+            try
+            {
+                Console.WriteLine("-----CLIENT-----");
+                CipherManager.NewID();
+                NetworkManager.Connect(IPAddress.Parse("127.0.0.1"), 40000, 2, 5);
+                NetworkManager.HostMet(true, "live", "test");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
             
-            //Debug.Assert(aeskey.Equals(dkdata), "Diff aes key");
+            Console.ReadKey();
+            //try
+            //{
+            //    NetworkManager.Connect(IPAddress.Parse("127.0.0.1"), 9999, 2, 5);
+            //}
+            //catch (Exception a)
+            //{
+            //    Console.WriteLine(a);
+            //    throw;
+            //}
 
-            //decrypt data
-            var hpktd = new HexPacketAES(pkt, false, EncryptType.DecryptPacket);
-            var dd = hpktd.Decrypt();
-            //Debug.Assert(dd.Equals("Test"), "Bad message");
+            ////init
+            //AesGcm256.init("test");
+            //var aeskey = AesGcm256.Key;
+            //var rsakey = RsaOAEP.GenerateKeyPair(2048);
 
-            string s = "";
-            HexPacket h = new HexPacket();
-            Object oj = h as object;
-            Object o = s as object;
-            Console.WriteLine(o.GetType());
-            Console.WriteLine(oj.GetType());
+            ////encrpt data
+            //var data = Encoding.UTF8.GetBytes("Test");
+            //var hpdata = new HexPacketAES(data, false, EncryptType.Encrypt);
+            //var pkt = (byte[])hpdata.Encrypt();
+
+            ////test rsa send key
+            //var t = HexPacketRSA.GetKeyToPacket((RsaKeyParameters) rsakey.Public);
+            //var r = HexPacketRSA.GetKeyFromPacket(t);
+            ////Debug.Assert(((RsaKeyParameters)rsakey.Public).Equals(r), "Diff rsa key");
+
+            ////test aes send key
+            //var rs = new HexPacketRSA(aeskey);
+            //var kdata = rs.Encrypt((RsaKeyParameters) rsakey.Private);
+            //var rs1 = new HexPacketRSA(kdata);
+            //var dkdata = rs1.Decrypt(r, true);
+
+            ////Debug.Assert(aeskey.Equals(dkdata), "Diff aes key");
+
+            ////decrypt data
+            //var hpktd = new HexPacketAES(pkt, false, EncryptType.DecryptPacket);
+            //var dd = hpktd.Decrypt();
+            ////Debug.Assert(dd.Equals("Test"), "Bad message");
+
+            //string s = "";
+            //HexPacket h = new HexPacket();
+            //Object oj = h as object;
+            //Object o = s as object;
+            //Console.WriteLine(o.GetType());
+            //Console.WriteLine(oj.GetType());
 
             //string statickey = "2192B39425BBD08B6E8E61C5D1F1BC9F428FC569FBC6F78C0BC48FCCDB0F42AE";
             //string staticiv = "E1E592E87225847C11D948684F3B070D";
@@ -134,7 +161,7 @@ namespace TestNet5compability
                             continue;
                         }
 
-                        Console.WriteLine("Connected.");
+                        Console.WriteLine("IsConnected.");
 
                         try
                         {

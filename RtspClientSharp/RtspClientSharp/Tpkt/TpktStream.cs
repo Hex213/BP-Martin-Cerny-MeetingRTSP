@@ -99,7 +99,7 @@ namespace RtspClientSharp.Tpkt
                     payloadSegment.Count);
 
                 var hexPacket = HexPacketAES.CreatePacketToEncrypt(_writeBuffer, _conParam.UseBase64);
-                byte[] dataToSend = (byte[])hexPacket.Encrypt();
+                byte[] dataToSend = (byte[])hexPacket.Encrypt(null);
                 
                 Console.WriteLine("SendTCP("+ dataToSend.Length + ")");
                 await _stream.WriteAsync(dataToSend, 0, dataToSend.Length);

@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using LibHexCryptoStandard.Algoritm;
 using LibHexCryptoStandard.Packet;
 using LibHexCryptoStandard.Packet.AES;
+using LibNet.Meeting.Packets.HexPacket;
 using LibRtspClientSharp.Hex;
 using Org.BouncyCastle.Asn1.Cmp;
 using RtspClientSharp.Codecs.Audio;
@@ -656,7 +657,7 @@ namespace RtspClientSharp.Rtsp
             Buffer.BlockCopy(bufferSegment.Array, 0, toDecryptBytes, 0, read);
             hexPacketAes = new HexPacketAES(toDecryptBytes, _connectionParameters.UseBase64, EncryptType.Decrypt);
 
-            toProcess = (byte[]) hexPacketAes.Decrypt();
+            toProcess = (byte[]) hexPacketAes.Decrypt(null);
         }
     }
 }

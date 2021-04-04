@@ -33,6 +33,8 @@ namespace RtspClientSharp
         public bool Enryption { get; set; } = false;
         //Pouzit Base64 desifrovanie/sifrovanie
         public bool UseBase64 { get; set; } = false;
+        //pouzi proxy server
+        public bool UseServer { get; set; } = false;
 
         public ConnectionParameters(Uri connectionUri)
         {

@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
 
-namespace LibHexCryptoStandard.Packet
+namespace LibNet.Meeting.Packets.Exceptions
 {
     public class PacketException : Exception
     {

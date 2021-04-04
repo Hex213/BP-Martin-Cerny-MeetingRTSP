@@ -4,15 +4,16 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <StartupObject>HexServer.Program</StartupObject>
+    <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NetCoreServer" Version="5.0.15" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\LibHexCryptoStandard\LibHexCryptoStandard.csproj" />
-    <ProjectReference Include="..\LibNet\LibNet.csproj" />
+    <ProjectReference Include="..\LibHexCryptoStandard\LibHexCryptoStandard.csproj">
+      <Private>true</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\LibNet\LibNet.csproj">
+      <Private>true</Private>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>

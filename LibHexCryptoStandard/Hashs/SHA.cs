@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Digests;
+using Org.BouncyCastle.Crypto.Parameters;
 
 namespace LibHexCryptoStandard.Hashs
 {
@@ -39,18 +41,14 @@ namespace LibHexCryptoStandard.Hashs
                 input = Encoding.ASCII.GetBytes(data);
             }
             else
+            if (rawData.GetType() == typeof(byte[]))
             {
-                if (rawData.GetType() == typeof(byte[]))
-                {
-                    input = rawData as byte[];
-                }
-                else
-                {
-                    throw new NotImplementedException("Not implementation for type = " + rawData.GetType());
-                }
+                input = rawData as byte[];
             }
-
-            
+            else
+            {
+                throw new NotImplementedException("Not implementation for type = " + rawData.GetType());
+            }
 
             hashAlgorithm.BlockUpdate(input, 0, input.Length);
 

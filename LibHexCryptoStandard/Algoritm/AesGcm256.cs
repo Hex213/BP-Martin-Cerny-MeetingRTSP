@@ -6,6 +6,8 @@ using System.Security.Cryptography;
 using System.Text;
 using LibHexCryptoStandard.Hashs;
 using LibHexCryptoStandard.Packet;
+using LibHexUtils.Arrays;
+using LibNet.Meeting.Packets.Exceptions;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -15,12 +17,12 @@ namespace LibHexCryptoStandard.Algoritm
 {
     public class AesGcm256
     {
-        public static byte[] Key => key;
+        
 
         private static readonly SecureRandom Random = new SecureRandom();
         private static byte[] key = null;
 
-        // Pre-configured Encryption Parameters
+        // Pre-configured Encryption AdditionalFunctions
         public static readonly int NonceBitSize = 128;
         public static readonly int MacBitSize = 128;
         public static readonly int KeyBitSize = 256;
@@ -30,23 +32,10 @@ namespace LibHexCryptoStandard.Algoritm
         }
 
         /// <summary>
-        /// Initialize function with any key. Transform string key with SHA3 to 256 bit key.
-        /// </summary>
-        /// <param name="key">Input key</param>
-        public static void init(string key)
-        {
-            if (key.Length == 0)
-            {
-                throw new TypeInitializationException("key", new Exception("Key length != 0"));
-            }
-            AesGcm256.key = SHA.SHA3(key, 256);
-        }
-
-        /// <summary>
         /// Generate new random IV with defined size
         /// </summary>
         /// <returns>Byte array with IV</returns>
-        public static byte[] NewIv()
+        private static byte[] NewIv()
         {
             var iv = new byte[NonceBitSize / 8];
             Random.NextBytes(iv);
@@ -77,11 +66,11 @@ namespace LibHexCryptoStandard.Algoritm
         /// <returns>Encrypted byte array. </returns>
         /// <exception cref="TypeInitializationException">Throws when is not initialized key.</exception>
         /// <exception cref="PacketException">Throws when is missing input data.</exception>
-        public static byte[] Encrypt(byte[] block)
+        public static byte[] Encrypt(byte[] block, byte[] key)
         {
-            if (key == null)
+            if (key == null || key.Length != 32)
             {
-                throw new TypeInitializationException("key", new Exception("Missing initialization!"));
+                throw new ArgumentException("Wrong key!");
             }
 
             var sR = string.Empty;
@@ -102,12 +91,15 @@ namespace LibHexCryptoStandard.Algoritm
 
                 byte[] encryptedBytes = new byte[iv.Length + cipher.GetOutputSize(plainBytes.Length)];
 
+                //ByteArray.Print(iv, "IV");
+                //ByteArray.Print(key, "KEY");
+
                 //copy iv
                 Buffer.BlockCopy(iv, 0, encryptedBytes, 0, iv.Length);
                 //encrypt
                 Int32 retLen = cipher.ProcessBytes
                     (plainBytes, 0, plainBytes.Length, encryptedBytes, iv.Length);
-                cipher.DoFinal(encryptedBytes, iv.Length);
+                cipher.DoFinal(encryptedBytes, iv.Length + retLen);
 
                 return encryptedBytes;
             }
@@ -120,11 +112,11 @@ namespace LibHexCryptoStandard.Algoritm
             return null;
         }
 
-        public static Object Decrypt(string EncryptedText, byte[] block = null)
+        public static Object Decrypt(byte[] key, string EncryptedText, byte[] block = null)
         {
-            if (key == null)
+            if (key == null || key.Length != 32)
             {
-                throw new TypeInitializationException("Not initialized!", null);
+                throw new ArgumentException("Wrong key!");
             }
 
             var sR = string.Empty;
@@ -138,6 +130,9 @@ namespace LibHexCryptoStandard.Algoritm
                 Buffer.BlockCopy(encryptedBytes, 0, iv, 0, NonceBitSize / 8);
                 Buffer.BlockCopy(encryptedBytes, NonceBitSize / 8, data, 0, encryptedBytes.Length - (NonceBitSize / 8));
 
+                //ByteArray.Print(iv, "IV");
+                //ByteArray.Print(key, "KEY");
+
                 GcmBlockCipher cipher = new GcmBlockCipher(new AesFastEngine());
                 AeadParameters parameters =
                     new AeadParameters(new KeyParameter(key), 128, iv, null);
@@ -147,6 +142,7 @@ namespace LibHexCryptoStandard.Algoritm
                 byte[] plainBytes = new byte[cipher.GetOutputSize(data.Length)];
                 Int32 retLen = cipher.ProcessBytes
                     (data, 0, data.Length, plainBytes, 0);
+                //ByteArray.Print(data, "DATA");
                 cipher.DoFinal(plainBytes, retLen);
 
                 return plainBytes;

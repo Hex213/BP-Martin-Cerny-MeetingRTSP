@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Text;
 using LibHexCryptoStandard.Algoritm;
+using LibNet.Meeting.Packets.Exceptions;
+using LibNet.Meeting.Packets.HexPacket;
 
 namespace LibHexCryptoStandard.Packet.AES
 {
@@ -42,12 +44,12 @@ namespace LibHexCryptoStandard.Packet.AES
             return new HexPacketAES(dataToEncrypt, usebase64, EncryptType.Encrypt);
         }
 
-        public Object Encrypt()
+        public Object Encrypt(byte[] key)
         {
             if (data_bytes == null || data_bytes.Length < 1 || type != EncryptType.Encrypt) throw new PacketException("Missing input data");
             
             byte[] block = data_bytes;
-            var data = AesGcm256.Encrypt(block);
+            var data = AesGcm256.Encrypt(block, key);
 
             if (data == null || data.Length != data_bytes.Length+16+16)
             {
@@ -65,7 +67,7 @@ namespace LibHexCryptoStandard.Packet.AES
         #endregion
 
         #region Decryption
-        private Object ProcessBytes(ushort offset = 0)
+        private Object ProcessBytes(byte[] key, ushort offset = 0)
         {
             byte[] dataBytes = null;
             string base64 = null;
@@ -97,7 +99,7 @@ namespace LibHexCryptoStandard.Packet.AES
             {
                 try
                 {
-                    decrypted = useBase64 ? AesGcm256.Decrypt(base64) : AesGcm256.Decrypt(null, dataBytes);
+                    decrypted = useBase64 ? AesGcm256.Decrypt(key, base64) : AesGcm256.Decrypt(key, null, dataBytes);
                     decryptedBytesSize = (uint)((byte[])decrypted).Length;
                 }
                 catch (Exception e)
@@ -113,11 +115,11 @@ namespace LibHexCryptoStandard.Packet.AES
             return decrypted;
         }
 
-        public Object Decrypt(ushort offset = 0)
+        public Object Decrypt(byte[] key, ushort offset = 0)
         {
             if (data_bytes == null || data_bytes.Length < 1 ||
                 (type != EncryptType.Decrypt && type != EncryptType.DecryptPacket)) throw new PacketException("Missing input data");
-            return ProcessBytes(offset);
+            return ProcessBytes(key, offset);
         }
         #endregion
     }
