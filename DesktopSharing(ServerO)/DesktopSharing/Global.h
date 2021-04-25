@@ -2,11 +2,12 @@
 #include <string>
 
 #include "AesGcm.h"
+#include "NamedPipe.h"
 
 //switch encryption/decryption(0,1)
-#define ENCRYPT_PKT 1
+#define ENCRYPT_PKT 0
 //force use base64 encryption(f,t)
-#define ENCRYPT_USEBASE64 1
+#define ENCRYPT_USEBASE64 0
 //switch encryption in moment when is request build
 #define ENCRYPT_WHENBUILD 0
 //turn on/off output
@@ -18,6 +19,13 @@ static std::string hexIV = "E1E592E87225847C11D948684F3B070D";
 #if ENCRYPT_PKT == 0
 static bool first = true;
 #endif
+
+extern NamedPipe pipe;
+extern HANDLE hPipe1, hPipe2;
+extern BOOL Finished;
+extern bool allowNext;
+
+void ReverseBytes(char* start, int size);
 
 //functions for encrypt and decrypt
 //main encrypt

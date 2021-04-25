@@ -7,51 +7,59 @@ using LibNet.Meeting.Packets.HexPacket;
 
 namespace LibHexCryptoStandard.Packet.AES
 {
+    // ReSharper disable once InconsistentNaming
     public class HexPacketAES
     {
-        private byte[] data_bytes = null;
-        private readonly bool useBase64;
-        private readonly EncryptType type;
-        private uint decryptedBytesSize = 0;
+        private byte[] _dataBytes = null;
+        private byte[] _key = null;
+        private readonly bool _useBase64;
+        private readonly EncryptType _type;
+        private uint _decryptedBytesSize = 0;
         
-        public EncryptType Type => type;
-        public byte[] DataBytes => data_bytes;
-        public uint DecryptedBytesSize => decryptedBytesSize;
-        public bool UseBase64 => useBase64;
+        public EncryptType Type => _type;
+        public byte[] DataBytes => _dataBytes;
+        public uint DecryptedBytesSize => _decryptedBytesSize;
+        public bool UseBase64 => _useBase64;
 
-        public HexPacketAES(byte[] dataBytes, bool useBase64, EncryptType et)
+        public HexPacketAES(byte[] dataBytes, bool useBase64, EncryptType et, byte[] key)
         {
-            if (dataBytes.Length <= 8 && et == EncryptType.Decrypt)
+            if (dataBytes == null) throw new ArgumentNullException(nameof(dataBytes));
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key.Length != 32)
             {
-                throw new PacketException("Bad array struct!");
+                throw new PacketException("Bad key length!");
             }
-            this.data_bytes = dataBytes;
-            this.useBase64 = useBase64;
-            this.type = et;
+            if ((dataBytes.Length <= 8 && et == EncryptType.Decrypt_hpkt) || dataBytes.Length <= 0)
+            {
+                throw new PacketException("Bad data!");
+            }
+
+            this._dataBytes = dataBytes;
+            this._useBase64 = useBase64;
+            this._type = et;
+            this._key = key;
         }
 
-        public static HexPacketAES GetDataFromPacket(in byte[] hPacket, ushort offset = 0, bool useBase64 = false)
+        public static HexPacketAES CreatePacketForDecrypt(in byte[] dataToDecrypt, bool isInHPkt, byte[] key, ushort offset = 0, bool useBase64 = false)
         {
-            byte[] pktBytes = HexPacket.Unpack(hPacket, offset);
-
-            return new HexPacketAES(pktBytes, useBase64, EncryptType.Decrypt);
+            return new HexPacketAES(dataToDecrypt, useBase64, isInHPkt ? EncryptType.Decrypt_hpkt : EncryptType.Decrypt, key);
         }
 
         #region Encrypt
         //Create hexPacket for encryption
-        public static HexPacketAES CreatePacketToEncrypt(byte[] dataToEncrypt, bool usebase64)
+        public static HexPacketAES CreatePacketForEncrypt(byte[] dataToEncrypt, bool toHPkt, byte[] key, bool usebase64 = false)
         {
-            return new HexPacketAES(dataToEncrypt, usebase64, EncryptType.Encrypt);
+            return new HexPacketAES(dataToEncrypt, usebase64, toHPkt ? EncryptType.Encrypt_hpkt : EncryptType.Encrypt, key);
         }
 
-        public Object Encrypt(byte[] key)
+        public Object Encrypt()
         {
-            if (data_bytes == null || data_bytes.Length < 1 || type != EncryptType.Encrypt) throw new PacketException("Missing input data");
+            if (_dataBytes == null || _dataBytes.Length <= 0 || _type != EncryptType.Encrypt && _type != EncryptType.Encrypt_hpkt) throw new PacketException("Missing input data");
             
-            byte[] block = data_bytes;
-            var data = AesGcm256.Encrypt(block, key);
+            byte[] block = _dataBytes;
+            var data = AesGcm256.Encrypt(block, _key);
 
-            if (data == null || data.Length != data_bytes.Length+16+16)
+            if (data == null || data.Length != _dataBytes.Length+16+16)
             {
                 throw new PacketException("Error with encryption");
             }
@@ -62,33 +70,33 @@ namespace LibHexCryptoStandard.Packet.AES
                 data = tmp.Select(c => (byte)c).ToArray();
             }
 
-            return HexPacket.Pack(data);
+            return _type == EncryptType.Encrypt_hpkt ? HexPacket.Pack(data) : data;
         }
         #endregion
 
         #region Decryption
-        private Object ProcessBytes(byte[] key, ushort offset = 0)
+        private Object ProcessDecrypt(ushort offset = 0)
         {
             byte[] dataBytes = null;
             string base64 = null;
 
-            if (type == EncryptType.Decrypt)
+            if (_type == EncryptType.Decrypt)
             {
-                dataBytes = data_bytes;
+                dataBytes = _dataBytes;
             }
             else
             {
-                if (type == EncryptType.DecryptPacket)
+                if (_type == EncryptType.Decrypt_hpkt)
                 {
-                    dataBytes = HexPacket.Unpack(data_bytes, offset);
+                    dataBytes = HexPacket.Unpack(_dataBytes, offset);
                 }
                 else
                 {
-                    throw new PacketException("Unsupported type!");
+                    throw new NotImplementedException("Unsupported type!");
                 }
             }
 
-            if (useBase64)
+            if (_useBase64)
             {
                 base64 = Encoding.UTF8.GetString(dataBytes);
             }
@@ -99,8 +107,8 @@ namespace LibHexCryptoStandard.Packet.AES
             {
                 try
                 {
-                    decrypted = useBase64 ? AesGcm256.Decrypt(key, base64) : AesGcm256.Decrypt(key, null, dataBytes);
-                    decryptedBytesSize = (uint)((byte[])decrypted).Length;
+                    decrypted = _useBase64 ? AesGcm256.Decrypt(_key, base64) : AesGcm256.Decrypt(_key, null, dataBytes);
+                    _decryptedBytesSize = (uint)((byte[])decrypted).Length;
                 }
                 catch (Exception e)
                 {
@@ -115,11 +123,11 @@ namespace LibHexCryptoStandard.Packet.AES
             return decrypted;
         }
 
-        public Object Decrypt(byte[] key, ushort offset = 0)
+        public Object Decrypt(ushort offset = 0)
         {
-            if (data_bytes == null || data_bytes.Length < 1 ||
-                (type != EncryptType.Decrypt && type != EncryptType.DecryptPacket)) throw new PacketException("Missing input data");
-            return ProcessBytes(key, offset);
+            if (_dataBytes == null || _dataBytes.Length < 1 ||
+                (_type != EncryptType.Decrypt && _type != EncryptType.Decrypt_hpkt)) throw new PacketException("Missing input data");
+            return ProcessDecrypt(offset);
         }
         #endregion
     }

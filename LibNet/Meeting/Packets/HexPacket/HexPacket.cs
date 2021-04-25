@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using LibHexUtils.Arrays;
 using LibNet.Meeting.Packets.Exceptions;
@@ -10,8 +11,9 @@ namespace LibNet.Meeting.Packets.HexPacket
     {
         None,
         Encrypt,
+        Encrypt_hpkt,
         Decrypt,
-        DecryptPacket
+        Decrypt_hpkt
     }
 
     public class HexPacket

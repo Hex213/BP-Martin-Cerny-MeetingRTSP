@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Security.Principal;
@@ -11,7 +12,7 @@ namespace LibNet.Meeting.Parsers
 {
     public class Parser
     {
-        public static readonly int controlLen = 32;
+        public static readonly int keyLen = 32;
 
         private static int Parse(byte[] hpkt, byte[]pattern, bool isPacket = true)
         {
@@ -28,6 +29,21 @@ namespace LibNet.Meeting.Parsers
             return Parse(hpkt, Encoding.UTF8.GetBytes("HMET HI")) != -1;
         }
 
+        public static bool ParseConn(byte[] hpkt, out byte[] id, out byte[] port)
+        {
+            port = null;
+            if (!ParseID(hpkt, out id))
+            {
+                return false;
+            }
+
+            var upkt = HexPacket.Unpack(hpkt, 0);
+            var s = Parse(upkt, Encoding.UTF8.GetBytes("HMET CONN "), false);
+            port = ByteArray.SubArray(upkt, s + "HMET CONN ".Length + id.Length);
+
+            return true;
+        }
+        
         public static bool ParseID(byte[] hpkt, out byte[] id, string arg = "HMET CONN ", bool inPkt = true)
         {
             var plain = inPkt ? HexPacket.Unpack(hpkt, 0) : hpkt;
@@ -43,44 +59,157 @@ namespace LibNet.Meeting.Parsers
             return Parse(hpkt, Encoding.UTF8.GetBytes("HMET OK")) != -1;
         }
 
-        private static int ParseOptConn(byte[] data, out int startSTS)
-        {
-            startSTS = ByteArray.Search(data, Encoding.UTF8.GetBytes("STS"));
-            return startSTS != -1 ? data[startSTS + "STS".Length + 4 + 4] : -1;
-        }
-
-        public static bool ParseOption(byte[] plainBytes, out int type, out byte[] outBytes)
+        //HMET CONN(ip)(port)(key)
+        public static bool ParseConReq(byte[] plaint, out byte[] ip, out byte[] port, out byte[] key, out byte[] id)
         {
             int s = -1;
-            outBytes = null;
-            var status = -1;
+            ip = null;
+            port = null;
+            key = null;
+            id = null;
+
+            if ((s = Parse(plaint, Encoding.UTF8.GetBytes("HMET CONN"), false)) == -1) return false;
+
+            ip = ByteArray.SubArray(plaint, s + "HMET CONN".Length, 4);
+            port = ByteArray.SubArray(plaint, s + "HMET CONN".Length + 4, 4);
+            key = ByteArray.SubArray(plaint, s + "HMET CONN".Length + 4 + 4, plaint.Length - s - "HMET CONN".Length - 4 - 4 - 4);
+            id = ByteArray.SubArray(plaint, s + "HMET CONN".Length + 4 + 4 + key.Length, 4);
+            return true;
+        }
+
+        public static bool ParseProxy(byte[] plainBytes, out int type)
+        {
+            int s = -1;
             type = -1;
 
-            if ((s = Parse(plainBytes, Encoding.UTF8.GetBytes("HMET OPT"), false)) != -1)
+            if ((s = Parse(plainBytes, Encoding.UTF8.GetBytes("HMET PROXY OK"), false)) != -1 && s == 0)
+            {
+                type = 0;
+            }
+            else if((s = Parse(plainBytes, Encoding.UTF8.GetBytes("HMET PROXY ERR"), false)) != -1 && s == 0)
+            {
+                type = 1;
+            }
+            else if ((s = Parse(plainBytes, Encoding.UTF8.GetBytes("HMET PROXY CONN OK"), false)) != -1 && s == 0)
             {
                 type = 2;
-                return true;
             }
-            if ((s = Parse(plainBytes, Encoding.UTF8.GetBytes("HMET CONN"), false)) != -1)
-            {
-                if (plainBytes.Length - s - 32 - "HMET CONN".Length < 0)
-                {
-                    return false;
-                }
 
-                outBytes = new byte[32];
-                
-                Buffer.BlockCopy(plainBytes, s + "HMET CONN".Length, outBytes, 0, outBytes.Length);
-                var r = ParseOptConn(outBytes, out s);
-                if (r >= 0 && r <= 2)
+            return s != -1;
+        }
+
+        private static int GetInt(byte[] input, int start)
+        {
+            var tmp = ByteArray.SubArray(input, start, 4);
+            return BitConverter.ToInt32(tmp, 0);
+        }
+
+        //T0(4)rtpCS,rtcpCS,rtpSA,rtpAS,T1(4)rtpCS,rtcpCS,rtpSA,rtpAS
+        //des,clie,des,clie
+        public static bool ParsePorts(byte[] plaint, out List<int> ports)
+        {
+            ports = null;
+            int s = -1;
+            if ((s = Parse(plaint, Encoding.UTF8.GetBytes("PSS"), false)) == -1) return false;
+
+            ports = new List<int>(9);
+            for (int i = 0; i < 8; i++)
+            {
+                ports.Add(GetInt(plaint, (s + 3) + (4 * i)));
+            }
+            ////todo: kontrola dlzky pola
+            //var rtpSAbytes = ByteArray.SubArray(plaint, s + 3, 4);
+            //var rtcpSAbytes = ByteArray.SubArray(plaint, s + 7, 4);
+            //var rtpCSbytes = ByteArray.SubArray(plaint, s + 11, 4);
+            //var rtcpCSbytes = ByteArray.SubArray(plaint, s + 15, 4);
+
+            //rtpCS = BitConverter.ToInt32(rtpCSbytes, 0);
+            //rtcpCS = BitConverter.ToInt32(rtcpCSbytes, 0);
+            //rtpSA = BitConverter.ToInt32(rtpSAbytes, 0); //Client na MediaServery
+            //rtcpSA = BitConverter.ToInt32(rtcpSAbytes, 0); //Client na MediaServery
+
+            //Console.Write(rtpSA + " - ");
+            //ByteArray.Print(rtpSAbytes, "SA");
+            //Console.Write(rtcpSA + " - ");
+            //ByteArray.Print(rtcpSAbytes, "SAc");
+            //Console.Write(rtpCS + " - ");
+            //ByteArray.Print(rtpCSbytes, "CS");
+            //Console.Write(rtcpCS + " - ");
+            //ByteArray.Print(rtcpCSbytes, "CSc");
+
+            return true;
+        }
+
+        private static int ParseOptConn(byte[] data)
+        {
+            var startSTS = ByteArray.Search(data, Encoding.UTF8.GetBytes("STS"));
+            return startSTS != -1 ? data[startSTS + "STS".Length] : -1;
+        }
+
+        public static bool ParseOption(byte[] plainBytes, out int type, out object outObj)
+        {
+            int s;
+            outObj = null;
+            type = -1;
+
+            if ((s = Parse(plainBytes, Encoding.UTF8.GetBytes("HMET OPT "), false)) != -1)
+            {
+                type = 2;
+                var or = new OptionReply();
+                if ((s = Parse(plainBytes, Encoding.UTF8.GetBytes("PORT "), false)) != -1)
                 {
-                    type = 1;
-                    outBytes = new byte[4+4+1];//todo: copy aeskey
-                    Buffer.BlockCopy(plainBytes, s + "STS".Length, outBytes, 0, outBytes.Length);
+                    s += "PORT ".Length;
+                    or.Type = OptType.Port;
+                }
+                else if ((s = Parse(plainBytes, Encoding.UTF8.GetBytes("PORT_S "), false)) != -1)
+                {
+                    s += "PORT_S ".Length;
+                    or.Type = OptType.PortServ;
                 }
                 else
+                {
+                    s = 0;
+                    or.Type = OptType.Unknown;
+                    outObj = or;
                     return false;
+                }
 
+                var ports = ByteArray.SubArray(plainBytes, s);
+                var l = ByteArray.SplitArray(ports, Encoding.UTF8.GetBytes("-"));
+                //foreach (var arr in l)
+                //{
+                //    ByteArray.Print(arr, "ARR");
+                //}
+                or.AData = l.ToArray();
+                outObj = or;
+                return true;
+            }
+            //HMET CONN(xySTS(m)xy)(identifier)(ip)(port)
+            if ((s = Parse(plainBytes, Encoding.UTF8.GetBytes("HMET CONN"), false)) != -1)
+            {
+                var conRep = new ConnectionReply();
+                type = 1;
+                conRep.Id = new byte[4];
+                var sts = new byte[16];
+
+                if (plainBytes.Length - s < "HMET CONN".Length + sts.Length)
+                {
+                    return false;
+                }
+
+                Buffer.BlockCopy(plainBytes, s + "HMET CONN".Length, sts, 0, sts.Length);
+                Buffer.BlockCopy(plainBytes, s + "HMET CONN".Length + sts.Length, conRep.Id, 0, conRep.Id.Length);
+                var ip = ByteArray.SubArray(plainBytes, s + "HMET CONN".Length + sts.Length + conRep.Id.Length, 4);
+                var port = ByteArray.SubArray(plainBytes, s + "HMET CONN".Length + sts.Length + conRep.Id.Length + ip.Length, 4);
+                if (s + "HMET CONN".Length + sts.Length + conRep.Id.Length + ip.Length + port.Length != plainBytes.Length)
+                {
+                    conRep.AData = ByteArray.SubArray(plainBytes, s + "HMET CONN".Length + sts.Length + conRep.Id.Length + ip.Length + port.Length);
+                }
+
+                conRep.Ipep = new IPEndPoint(new IPAddress(ip), BitConverter.ToInt32(port, 0));
+                conRep.Status = ParseOptConn(sts);
+
+                outObj = conRep;
                 return true;
             }
 
@@ -140,31 +269,99 @@ namespace LibNet.Meeting.Parsers
             return Parse(hpkt, Encoding.UTF8.GetBytes("HMET AES OK"), false) != -1;
         }
 
-        public static bool ParseHostServ(byte[] plainBytes, out int port, out byte[] control)
+        public static bool ParseHostServ(byte[] unpkt, out IPAddress ip, out int port, out byte[] key)
         {
-            if (plainBytes == null) throw new ArgumentNullException(nameof(plainBytes));
+            if (unpkt == null) throw new ArgumentNullException(nameof(unpkt));
             port = -1;
-            control = null;
+            key = null;
+            ip = null;
             int start = -1;
             
             string arg = "HMET HOST OK ";
 
-            if ((start = Parse(plainBytes, Encoding.UTF8.GetBytes(arg), false)) != -1)
+            if ((start = Parse(unpkt, Encoding.UTF8.GetBytes(arg), false)) != -1)
             {
-                if ((plainBytes.Length - start) < (arg.Length + 4 + controlLen))
+                if ((unpkt.Length - start) < (arg.Length + 4 + 4 + keyLen))
                 {
                     return false;
                 }
 
-                var portBytes = new byte[4];
-                control = new byte[controlLen];
-                Buffer.BlockCopy(plainBytes, start + arg.Length, portBytes, 0, 4);
-                port = BitConverter.ToInt32(portBytes, 0);
-                Buffer.BlockCopy(plainBytes, start + arg.Length + portBytes.Length, control, 0, controlLen);
-                return true;
+                try
+                {
+                    var ipBytes = new byte[4];
+                    var portBytes = new byte[4];
+                    key = new byte[keyLen];
+
+                    int starttemp = start + arg.Length;
+                    ipBytes = ByteArray.SubArray(unpkt, starttemp, ipBytes.Length);
+                    portBytes = ByteArray.SubArray(unpkt, starttemp + ipBytes.Length, portBytes.Length);
+                    key = ByteArray.SubArray(unpkt, starttemp + ipBytes.Length + portBytes.Length, keyLen);
+                    
+                    port = BitConverter.ToInt32(portBytes, 0);
+                    ip = new IPAddress(ipBytes);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+                
             }
 
             return false;
+        }
+
+        public static bool IPCParseDefaultPorts()
+        {
+            return false;//todo: find PSP=
+        }
+
+        public static bool IPCParseServPorts(byte[] buff, out int rtpPort, out int rtcpPort)
+        {
+            rtpPort = -1;
+            rtcpPort = -1;
+            var s = Parse(buff, Encoding.UTF8.GetBytes("PSP="), false);
+            if (s == -1)
+            {
+                return false;
+            }
+
+            var rtpBytes = ByteArray.SubArray(buff, s + 4, 4);
+            var rtcpBytes = ByteArray.SubArray(buff, s + 4 + 4, 4);
+
+            Array.Reverse(rtpBytes, 0, rtpBytes.Length);
+            Array.Reverse(rtcpBytes, 0, rtcpBytes.Length);
+
+            rtpPort = BitConverter.ToInt32(rtpBytes, 0);
+            rtcpPort = BitConverter.ToInt32(rtcpBytes, 0);
+            return true;
+        }
+
+        public static bool IPCParsePorts(byte[] buff, out int rtpPortT0, out int rtcpPortT0, out int rtpPortT1, out int rtcpPortT1)
+        {
+            rtpPortT0 = -1;
+            rtpPortT1 = -1;
+            rtcpPortT1 = -1;
+            rtcpPortT0 = -1;
+            var s = Parse(buff, Encoding.UTF8.GetBytes("HCPORT "), false);
+            if (s == -1)
+            {
+                return false;
+            }
+
+            var rtpSub = ByteArray.SubArray(buff, s + "HCPORT ".Length, 4);
+            var rtcpSub = ByteArray.SubArray(buff, s + "HCPORT ".Length + 4, 4);
+            var rtpSubt1 = ByteArray.SubArray(buff, s + "HCPORT ".Length + 8, 4);
+            var rtcpSubt1 = ByteArray.SubArray(buff, s + "HCPORT ".Length + 12, 4);
+            Array.Reverse(rtpSub, 0, rtpSub.Length);
+            Array.Reverse(rtcpSub, 0, rtcpSub.Length);
+            Array.Reverse(rtpSubt1, 0, rtpSubt1.Length);
+            Array.Reverse(rtcpSubt1, 0, rtcpSubt1.Length);
+            rtpPortT0 = BitConverter.ToInt32(rtpSub, 0);
+            rtcpPortT0 = BitConverter.ToInt32(rtcpSub, 0);
+            rtpPortT1 = BitConverter.ToInt32(rtpSubt1, 0);
+            rtcpPortT1 = BitConverter.ToInt32(rtcpSubt1, 0);
+            return true;
         }
     }
 }

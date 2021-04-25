@@ -11,13 +11,10 @@ namespace LibNet.Utils
     {
         private TcpClient handler;
         private TCPState _tcpState;
-        
-        private NetworkStream stream;
 
         public ClientTCP(TcpClient handler, TCPState tcpState)
         {
             this.handler = handler;
-            this.stream = handler.GetStream();
             this._tcpState = tcpState;
         }
 
@@ -25,7 +22,7 @@ namespace LibNet.Utils
 
         public TCPState TcpState => _tcpState;
 
-        public NetworkStream Stream => stream;
+        public NetworkStream Stream => _tcpState.Stream;
 
         protected bool Equals(ClientTCP other)
         {

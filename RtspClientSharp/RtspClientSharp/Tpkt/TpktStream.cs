@@ -98,8 +98,8 @@ namespace RtspClientSharp.Tpkt
                 Buffer.BlockCopy(payloadSegment.Array, payloadSegment.Offset, _writeBuffer, TpktHeader.Size,
                     payloadSegment.Count);
 
-                var hexPacket = HexPacketAES.CreatePacketToEncrypt(_writeBuffer, _conParam.UseBase64);
-                byte[] dataToSend = (byte[])hexPacket.Encrypt(null);
+                var hexPacket = HexPacketAES.CreatePacketForEncrypt(_writeBuffer, _conParam.UseBase64, null);
+                byte[] dataToSend = (byte[])hexPacket.Encrypt();
                 
                 Console.WriteLine("SendTCP("+ dataToSend.Length + ")");
                 await _stream.WriteAsync(dataToSend, 0, dataToSend.Length);

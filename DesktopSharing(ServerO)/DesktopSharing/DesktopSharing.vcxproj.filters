@@ -478,6 +478,12 @@
     <ClCompile Include="HexPacket.cpp">
       <Filter>src\Hex</Filter>
     </ClCompile>
+    <ClCompile Include="NamedPipe.cpp">
+      <Filter>src\Hex</Filter>
+    </ClCompile>
+    <ClCompile Include="Parser.cpp">
+      <Filter>src\Hex</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="net\Acceptor.h">
@@ -808,6 +814,12 @@
       <Filter>src\Hex</Filter>
     </ClInclude>
     <ClInclude Include="HexPacket.h">
+      <Filter>src\Hex</Filter>
+    </ClInclude>
+    <ClInclude Include="NamedPipe.h">
+      <Filter>src\Hex</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser.h">
       <Filter>src\Hex</Filter>
     </ClInclude>
   </ItemGroup>

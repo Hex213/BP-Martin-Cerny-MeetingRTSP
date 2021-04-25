@@ -22,10 +22,10 @@ namespace HexServer.Net
     public static class ConnectionManager
     {
         private static IPAddress _mainIP;
+        private static int _mainPort;
 
         public static IPAddress MainIp => _mainIP;
 
-        private static int _mainPort;
         private static Dictionary<int, bool> _serverports;
 
         private static Dictionary<EndPoint, RsaKeyParameters> clientsPublicKeys;
@@ -87,9 +87,16 @@ namespace HexServer.Net
 
         public static SessionServer CreateSession(byte[] id, EndPoint adminEndPoint)
         {
+            var session = new Session(id, null);
+            int port = 0;
+
+            if (_sessions.Contains(session))
+            {
+                //todo: throw
+            }
+
             CheckPorts();
 
-            int port = 0;
             foreach (var pair in _serverports.Where(pair => pair.Value == false))
             {
                 port = pair.Key;
@@ -103,14 +110,9 @@ namespace HexServer.Net
             }
 
             var ss = new SessionServer(_mainIP, port, CipherManager.GetRandBytes(32), adminEndPoint, GetPublicKey(adminEndPoint));
-            var sesion = new Session(id, ss);
-            if (_sessions.Contains(sesion))
-            {
-                _serverports[port] = false;
-                //todo: throw
-            }
+            session = new Session(id, ss);
 
-            _sessions.Add(sesion);
+            _sessions.Add(session);
             Task.Run(() => ss.StartServer());
 
             return ss;

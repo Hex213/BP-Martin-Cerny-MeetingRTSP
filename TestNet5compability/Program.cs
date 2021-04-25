@@ -25,6 +25,11 @@ namespace TestNet5compability
             {
                 Console.WriteLine("-----CLIENT-----");
                 CipherManager.NewID();
+                NetworkManager.InitConParams(new ConnectionParameters(new Uri("rtsp://127.0.0.1:1/"))
+                {
+                    Enryption = false,
+                    UseServer = true
+                });
                 NetworkManager.Connect(IPAddress.Parse("127.0.0.1"), 40000, 2, 5);
                 NetworkManager.HostMet(true, "live", "test");
             }
@@ -69,7 +74,7 @@ namespace TestNet5compability
             ////Debug.Assert(aeskey.Equals(dkdata), "Diff aes key");
 
             ////decrypt data
-            //var hpktd = new HexPacketAES(pkt, false, EncryptType.DecryptPacket);
+            //var hpktd = new HexPacketAES(pkt, false, EncryptType.Decrypt_hpkt);
             //var dd = hpktd.Decrypt();
             ////Debug.Assert(dd.Equals("Test"), "Bad message");
 
@@ -101,7 +106,7 @@ namespace TestNet5compability
             //                  connectionParameters.RtpTransport);
 
             //byte[] testBytes = { 15, 32, 14, 205, 0};
-            //var hpkt = HexPacketAES.CreatePacketToEncrypt(testBytes, connectionParameters.UseBase64);
+            //var hpkt = HexPacketAES.CreatePacketForEncrypt(testBytes, connectionParameters.UseBase64);
             //byte[] pkt = (byte[]) hpkt.Encrypt();
 
             //var keys = HexPacketRSA.GenerateKeyPair(2048);

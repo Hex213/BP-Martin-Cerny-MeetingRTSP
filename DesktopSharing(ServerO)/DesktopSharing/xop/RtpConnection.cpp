@@ -6,7 +6,6 @@
 #include "Global.h"
 #include "RtspConnection.h"
 #include "net/SocketUtil.h"
-//#include "AesGcm.h"
 
 using namespace std;
 using namespace xop;
@@ -41,6 +40,29 @@ RtpConnection::~RtpConnection()
 	}
 }
 
+void SendPorts(unsigned int rtp, unsigned int rtcp)
+{
+	char ToSend[11];
+	ToSend[0] = 'S', ToSend[1] = 'P', ToSend[10] = '\0';
+	unsigned char bytes[4];
+	bytes[0] = (rtp >> 24) & 0xFF;
+	bytes[1] = (rtp >> 16) & 0xFF;
+	bytes[2] = (rtp >> 8) & 0xFF;
+	bytes[3] = rtp & 0xFF;
+	memcpy_s(ToSend + 2, 8, bytes, 4);
+	bytes[0] = (rtcp >> 24) & 0xFF;
+	bytes[1] = (rtcp >> 16) & 0xFF;
+	bytes[2] = (rtcp >> 8) & 0xFF;
+	bytes[3] = rtcp & 0xFF;
+	memcpy_s(ToSend + 6, 4, bytes, 4);
+	std::cout << "::" << rtp << ":" << rtcp << std::endl;
+	for (int i = 0; i < 11; i++)
+	{
+		std::cout << +ToSend[i] << "-";
+	}std::cout << std::endl;
+	pipe.Write(ToSend, 10);
+}
+
 int RtpConnection::GetId() const
 {
 	auto conn = rtsp_connection_.lock();
@@ -58,6 +80,8 @@ bool RtpConnection::SetupRtpOverTcp(MediaChannelId channel_id, uint16_t rtp_chan
 		return false;
 	}
 
+	//SendPorts(rtp_channel, rtcp_channel);
+
 	media_channel_info_[channel_id].rtp_channel = rtp_channel;
 	media_channel_info_[channel_id].rtcp_channel = rtcp_channel;
 	rtpfd_[channel_id] = conn->GetSocket();
@@ -67,6 +91,8 @@ bool RtpConnection::SetupRtpOverTcp(MediaChannelId channel_id, uint16_t rtp_chan
 
 	return true;
 }
+
+bool allowNext = false;
 
 bool RtpConnection::SetupRtpOverUdp(MediaChannelId channel_id, uint16_t rtp_port, uint16_t rtcp_port)
 {
@@ -78,9 +104,10 @@ bool RtpConnection::SetupRtpOverUdp(MediaChannelId channel_id, uint16_t rtp_port
 	if(SocketUtil::GetPeerAddr(conn->GetSocket(), &peer_addr_) < 0) {
 		return false;
 	}
-
+	
 	media_channel_info_[channel_id].rtp_port = rtp_port;
 	media_channel_info_[channel_id].rtcp_port = rtcp_port;
+
 
 	std::random_device rd;
 	for (int n = 0; n <= 10; n++) {

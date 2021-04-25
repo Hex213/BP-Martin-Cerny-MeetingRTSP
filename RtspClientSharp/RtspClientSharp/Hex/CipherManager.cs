@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Security;
 using System.Text;
 using LibHexCryptoStandard.Algoritm;
@@ -20,7 +21,8 @@ namespace LibRtspClientSharp.Hex
     {
         private static AsymmetricCipherKeyPair sessionRsaKeyPair;
         private static byte[] hashID;
-        private static byte[] AesKeyControl = null;
+        private static byte[] AesKeyAdmin = null;
+        private static byte[] AesKeyData = null;
 
         public static byte[] HashId => hashID;
 
@@ -32,6 +34,7 @@ namespace LibRtspClientSharp.Hex
             var toHash = ByteArray.CopyBytes(0, vk.Exponent.ToByteArray(), vk.Modulus.ToByteArray());
             
             hashID = SHA.SHA3(toHash, 256);
+            Console.WriteLine("ID: " + System.Convert.ToBase64String(hashID));
         }
 
         public static byte[] GetKeyToSend()
@@ -45,12 +48,42 @@ namespace LibRtspClientSharp.Hex
             return hp.Decrypt((RsaKeyParameters) sessionRsaKeyPair.Private, true);
         }
 
-        public static byte[] EncryptControl(byte[] plainControlBytes)
+        public static byte[] EcryptAdminData(byte[] data)
         {
-            if (plainControlBytes == null) throw new ArgumentNullException(nameof(plainControlBytes));
-            var h = SHA.SHA3(plainControlBytes, 256);
-            HexPacketRSA conPkt = new HexPacketRSA(h);
-            return conPkt.Encrypt((RsaKeyParameters)sessionRsaKeyPair.Private);
+            try
+            {
+                HexPacketAES hpkt = HexPacketAES.CreatePacketForEncrypt(data, true, AesKeyAdmin);
+                return (byte[])hpkt.Encrypt();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public static byte[] DecryptAdminData(byte[] hpktb)
+        {
+            try
+            {
+                HexPacketAES hpkt = HexPacketAES.CreatePacketForDecrypt(hpktb, true, AesKeyAdmin);
+                return (byte[]) hpkt.Decrypt();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public static byte[] EncryptControl(byte[] key)
+        {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key.Length != 32) throw new ArgumentException("Bad key length!");
+
+            AesKeyAdmin = key;
+
+            var dataBytes = HexRandom.GetRandomBytesWithMessage(64, Encoding.UTF8.GetBytes("HMET AES OK"));
+            var pkt = HexPacketAES.CreatePacketForEncrypt(dataBytes, true, AesKeyAdmin);
+            return (byte[]) pkt.Encrypt();
         }
 
         private static byte[] EncodeRSA(AsymmetricKeyParameter key, byte[] data, bool encrypt, bool inHPkt)
@@ -71,15 +104,14 @@ namespace LibRtspClientSharp.Hex
             return EncodeRSA(sessionRsaKeyPair.Public, data, encrypt, inHPkt);
         }
 
-        public static bool ParseAndSetKey(byte[] hpkt)
+        public static bool ParseHostConf(byte[] hpkt)
         {
             try
             {
-                var hpa = new HexPacketRSA(hpkt);
-                var k = hpa.Decrypt((RsaKeyParameters) sessionRsaKeyPair.Private, true);
-                if (k.Length != 32) return false;
-                AesKeyControl = k;
-                return true;
+                var pkt = HexPacketAES.CreatePacketForDecrypt(hpkt, true, AesKeyAdmin);
+                var decrypted = (byte[]) pkt.Decrypt();
+                if (decrypted.Length != 32) return false;
+                return ByteArray.Search(decrypted, Encoding.UTF8.GetBytes("HMET AES OK")) != -1;
             }
             catch (Exception)
             {
@@ -91,8 +123,25 @@ namespace LibRtspClientSharp.Hex
         {
             var l = Encoding.UTF8.GetBytes("HMET AES OK");
             var r = HexRandom.GetRandomBytesWithMessage(32, l);
-            var aesPkt = new HexPacketAES(r, false, EncryptType.Encrypt);
-            return (byte[]) aesPkt.Encrypt(AesKeyControl);
+            var aesPkt = HexPacketAES.CreatePacketForEncrypt(r, true, AesKeyAdmin);//new HexPacketAES(r, false, EncryptType.Encrypt);
+            return (byte[]) aesPkt.Encrypt();
+        }
+
+        public static byte[] EncryptDataKeyWithIPEP(RsaKeyParameters clientKey, IPEndPoint ipep)
+        {
+            if (clientKey == null) throw new ArgumentNullException(nameof(clientKey));
+            return EncodeRSA(clientKey,
+                ByteArray.CopyBytes(0, ipep.Address.GetAddressBytes(), BitConverter.GetBytes(ipep.Port),
+                    NetworkManager.ConnectionParameters.Enryption ? AesKeyData : new byte[1]),
+                true, true);
+        }
+
+        public static void InitEncryption(byte[] key)
+        {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key.Length != 32) throw new ArgumentException("Key length is not correct!");
+
+            AesKeyData = key;
         }
 
         public static void InitEncryption(string key)
@@ -112,7 +161,14 @@ namespace LibRtspClientSharp.Hex
 
             Buffer.BlockCopy(rkey, 0, toKey, 0, rkey.Length);
             Buffer.BlockCopy(hkey, 0, toKey, rkey.Length, hkey.Length);
-            AesKeyControl = SHA.SHA3(toKey, bitLen);
+            AesKeyData = SHA.SHA3(toKey, bitLen);
+        }
+
+        public static byte[] ProcessData(byte[] data, bool encrypt, bool hpkt)
+        {
+            if (AesKeyData == null) return data;
+            var pkt = encrypt ? HexPacketAES.CreatePacketForEncrypt(data, hpkt, AesKeyData) : HexPacketAES.CreatePacketForDecrypt(data, hpkt, AesKeyData);
+            return encrypt ? (byte[])pkt.Encrypt() :(byte[])pkt.Decrypt();
         }
     }
 }

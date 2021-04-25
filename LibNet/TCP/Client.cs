@@ -18,6 +18,11 @@ namespace LibNet.TCP
         private ClientTCP client;
         private NetworkStream stream;
 
+        public Socket GetSocket()
+        {
+            return client?.Handler?.Client;
+        }
+
         public Client()
         {
         }
@@ -44,11 +49,24 @@ namespace LibNet.TCP
             PrintNet.printSend(client.Handler.Client, bytes.Length);
         }
 
+        public object ReceiveAndWait(int milliseconds)
+        {
+            if (milliseconds < 0)
+            {
+                return null;
+            }
+            var tmp = client.Handler.ReceiveTimeout;
+            client.Handler.ReceiveTimeout = milliseconds;
+            var o = Receive();
+            client.Handler.ReceiveTimeout = tmp;
+            return o;
+        }
+
         public override object Receive()
         {
             var s = client.TcpState;
 
-            var read = stream.Read(s.buffer, s.totalRead, s.BufferSize - s.totalRead);
+            var read = stream.Read(s.buffer, s.totalRead, s.bufferSize - s.totalRead);
             PrintNet.printRead(client.Handler.Client, read);
 
             return s;

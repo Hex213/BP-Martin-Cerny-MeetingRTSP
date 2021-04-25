@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace LibHexUtils.Arrays
@@ -10,13 +11,18 @@ namespace LibHexUtils.Arrays
         /// </summary>
         /// <param name="src">Input data</param>
         /// <param name="pattern">Data to find</param>
-        /// <param name="offset">Start of searching</param>
-        /// <returns>Return -1 if not found otherwise index of start.</returns>
-        public static int Search(byte[] src, byte[] pattern, int offset = 0)
+        /// <param name="srcOff">Index to start position of searching</param>
+        /// <returns>Return -1 if not found otherwise index of start</returns>
+        public static int Search(byte[] src, byte[] pattern, int srcOff = 0)
         {
+            if (pattern.Length > src.Length - srcOff)
+            {
+                return -1;
+            }
+
             int c = src.Length - pattern.Length + 1;
             int j;
-            for (int i = offset; i < c; i++)
+            for (int i = srcOff; i < c; i++)
             {
                 if (src[i] != pattern[0]) continue;
                 for (j = pattern.Length - 1; j >= 1 && src[i + j] == pattern[j]; j--) ;
@@ -40,7 +46,7 @@ namespace LibHexUtils.Arrays
             {
                 if (s >= offset && count > 0)
                 {
-                    Console.Write(b + "-");
+                    Console.Write((int)b + "-");
                     count--;
                 }
                 s++;
@@ -71,6 +77,14 @@ namespace LibHexUtils.Arrays
             return outBytes;
         }
 
+        public static void AppendArray(ref byte[] des, in byte[] add)
+        {
+            if (add == null) throw new ArgumentNullException(nameof(add));
+            if (add.Length == 0) throw new ArgumentException("Value cannot be an empty collection.", nameof(add));
+            
+            des = des != null ? CopyBytes(0, des, add) : SubArray(add, 0);
+        }
+
         public static byte[] SubArray(byte[] src, int startOffset, int count = 0)
         {
             if (src == null) throw new ArgumentNullException(nameof(src));
@@ -86,6 +100,42 @@ namespace LibHexUtils.Arrays
             var dst = new byte[count];
             Buffer.BlockCopy(src, startOffset, dst, 0, count);
             return dst;
+        }
+
+        public static List<byte[]> SplitArray(byte[] src, byte[] pattern)
+        {
+            if (src == null) throw new ArgumentNullException(nameof(src));
+            if (pattern == null) throw new ArgumentNullException(nameof(pattern));
+            if (src.Length == 0) throw new ArgumentException("Value cannot be an empty collection.", nameof(src));
+            if (pattern.Length == 0)
+                throw new ArgumentException("Value cannot be an empty collection.", nameof(pattern));
+            if (src.Length < pattern.Length) throw new ArgumentOutOfRangeException(nameof(src), "Src is smaller than pattern.");
+
+            var splited = new List<byte[]>();
+            int startpos = 0, lastf = -1;
+            do
+            {
+                if ((lastf = Search(src, pattern, startpos)) == -1)
+                {
+                    if (startpos != src.Length)
+                    {
+                        var lsub = SubArray(src, startpos);
+                        splited.Add(lsub);
+                    }
+                    break;
+                }
+                if(lastf == startpos)
+                {
+                    startpos += pattern.Length;
+                    continue;
+                }
+                var sub = SubArray(src, startpos, lastf - startpos);
+                startpos = lastf;
+                splited.Add(sub);
+
+            } while (true);
+
+            return splited;
         }
     }
 }

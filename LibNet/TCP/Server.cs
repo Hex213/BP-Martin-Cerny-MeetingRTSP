@@ -44,7 +44,7 @@ namespace LibNet.TCP
         public void ReadClient(ClientTCP client)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-            client.TcpState.workSocket = client.Handler.Client;
+            client.TcpState.setSocket(client.Handler);
             var state = client.TcpState;
 
             //while (true)
@@ -62,14 +62,14 @@ namespace LibNet.TCP
             }
             if (state.Buffer.Length - state.TotalRead < 5)
             {
-                Console.WriteLine("Buffer for client is too small, buffer will be rewrite!");
+                Console.WriteLine("Buffer for client("+state.WorkSocket.RemoteEndPoint+") is too small, buffer will be rewrite!");
                 state.totalRead = 0;
             }
             var read = client.Stream.Read(state.buffer, state.TotalRead, state.Buffer.Length - state.TotalRead);
             if (read > 0)
             {
                 state.totalRead += read;
-                PrintNet.printRead(state.workSocket, read);
+                PrintNet.printRead(state.WorkSocket, read);
             }
             if (af?.RecvCondition((object)client) == true)
             {

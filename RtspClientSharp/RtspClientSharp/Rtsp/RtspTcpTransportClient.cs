@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using LibHexCryptoStandard.Packet;
 using LibHexCryptoStandard.Packet.AES;
+using LibNet.Utils;
 using LibRtspClientSharp.Hex;
 using RtspClientSharp.Utils;
 
@@ -25,11 +26,12 @@ namespace RtspClientSharp.Rtsp
         public RtspTcpTransportClient(ConnectionParameters connectionParameters)
             : base(connectionParameters)
         {
+            NetworkManager.InitConParams(connectionParameters);
         }
 
         public override async Task ConnectAsync(CancellationToken token)
         {
-            _tcpClient = NetworkClientFactory.CreateTcpClient();
+            _tcpClient = NetworkManager.ConnectionParameters.UseServer ? NetworkManager.TcpSocket : NetworkClientFactory.CreateTcpClient();
 
             Uri connectionUri = ConnectionParameters.ConnectionUri;
 
@@ -61,36 +63,40 @@ namespace RtspClientSharp.Rtsp
         protected override Task WriteAsync(byte[] buffer, int offset, int count)
         {
             Debug.Assert(_networkStream != null, "_networkStream != null");
-            if(!Global.strictPrint)
+            if (Global.strictPrint)
             {
-                Console.WriteLine("SendClear(" + count + "):" + Encoding.UTF8.GetString(buffer, offset, count));
+                Console.WriteLine("Sending (" + count + ")");
             }
-            else
-            {
-                if (!Global.onlyFrames)
-                {
-                    Console.WriteLine("SendClear(" + count + ")");
-                }
-            }
+            //if(!Global.strictPrint)
+            //{
+            //    Console.WriteLine("SendClear(" + count + "):" + Encoding.UTF8.GetString(buffer, offset, count));
+            //}
+            //else
+            //{
+            //    if (!Global.onlyFrames)
+            //    {
+            //        Console.WriteLine("SendClear(" + count + ")");
+            //    }
+            //}
 
             if (ConnectionParameters.Enryption)
             {
                 byte[] bytes = new byte[count];
                 Buffer.BlockCopy(buffer, offset, bytes, 0, count);
-                var hexPacket = HexPacketAES.CreatePacketToEncrypt(bytes, ConnectionParameters.UseBase64);
-                var toSend = (byte[])hexPacket.Encrypt(null);
+                var hexPacket = HexPacketAES.CreatePacketForEncrypt(bytes, ConnectionParameters.UseBase64, null);
+                var toSend = (byte[])hexPacket.Encrypt();
                 Buffer.BlockCopy(toSend, 0, buffer, offset, toSend.Length);
                 count = toSend.Length;
             }
 
-            if (!Global.onlyFrames)
-            {
-                Console.WriteLine("Send(" + count + ")");
-                if(!Global.strictPrint)
-                {
-                    Console.WriteLine(Encoding.UTF8.GetString(buffer, 8, count));
-                }
-            }
+            //if (!Global.onlyFrames)
+            //{
+            //    Console.WriteLine("Send(" + count + ")");
+            //    if(!Global.strictPrint)
+            //    {
+            //        Console.WriteLine(Encoding.UTF8.GetString(buffer, 8, count));
+            //    }
+            //}
 
             return _networkStream.WriteAsync(buffer, offset, count);
         }

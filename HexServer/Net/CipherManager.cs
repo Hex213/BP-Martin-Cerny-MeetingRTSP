@@ -41,17 +41,17 @@ namespace HexServer.Net
             return pkt.Encrypt(key);
         }
 
-        public static byte[] AesEngine(byte[] key, byte[] data, bool encrypt)
+        public static byte[] AesEngine(byte[] key, byte[] data, bool encrypt, bool hPkt = true)
         {
             if (encrypt)
             {
-                var hAesPkt = new HexPacketAES(data, false, EncryptType.Encrypt);
-                return (byte[])hAesPkt.Encrypt(key);
+                var hAesPkt = HexPacketAES.CreatePacketForEncrypt(data, hPkt, key);//new HexPacketAES(data, false, EncryptType.Encrypt);
+                return (byte[])hAesPkt.Encrypt();
             }
             else
             {
-                var hAesPkt = new HexPacketAES(data, false, EncryptType.DecryptPacket);
-                return (byte[])hAesPkt.Decrypt(key);
+                var hAesPkt = HexPacketAES.CreatePacketForDecrypt(data, hPkt, key);//new HexPacketAES(data, false, EncryptType.Decrypt_hpkt);
+                return (byte[])hAesPkt.Decrypt();
             }
         }
     }

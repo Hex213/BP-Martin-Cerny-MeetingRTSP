@@ -10,13 +10,72 @@
 #include "RtspMessage.h"
 
 #include <iostream>
-
+#include "NamedPipe.h"
 
 #include "AesGcm.h"
 #include "media.h"
+#include "Parser.h"
 
 using namespace std;
 using namespace xop;
+
+extern NamedPipe pipe;
+extern int clientRTP_t0;
+extern int clientRTCP_t0;
+extern int serverRTP_t0;
+extern int serverRTCP_t0;
+extern int clientRTP_t1;
+extern int clientRTCP_t1;
+extern int serverRTP_t1;
+extern int serverRTCP_t1;
+int real_rtp_client_portT0 = -1;
+int real_rtcp_client_portT0 = -1;
+int real_rtp_client_portT1 = -1;
+int real_rtcp_client_portT1 = -1;
+bool oneSet = true;
+
+int ReturnInt(string s)
+{
+	if (s.length() != 4)
+	{
+		throw new std::invalid_argument("string must have 4 bytes");
+	}
+	char* t = const_cast<char*>(s.c_str());
+	int a;
+	memcpy(&a, t, sizeof(int));
+	return a;
+}
+
+void RewriteHCPORT(char* start, size_t clear)
+{
+	//std::cout << "\nStart:" << (void*)start << "-End:" << (void*)(start + clear) << std::endl;
+	for (int i = 0; i <= clear; i++)
+	{
+		start[i] = ' ';
+	}
+}
+
+int extract_port(string& data, bool forceOffOutput = false)
+{
+	if (_DEBUG && !forceOffOutput) std::cout << "L0:" << data.length() << std::endl;
+	auto start = data.find("-");
+	if (start != string::npos)
+	{
+		if (_DEBUG && !forceOffOutput) std::cout << "-S:" << start << std::endl;
+		data = start != 0 ? data.erase(0, start + 1) : data.erase(0, 1);
+		if (_DEBUG && !forceOffOutput) std::cout << "-L1:" << data.length() << std::endl;
+		auto out = Parser::GetIntFromBytes(const_cast<char*>(data.c_str()));
+		data = data.erase(0, 4);
+		if (_DEBUG && !forceOffOutput) std::cout << "-L2:" << data.length() << std::endl;
+		if (_DEBUG && !forceOffOutput) std::cout << "ret:" << out << std::endl;
+		return out;
+	} else
+	{
+		throw /*new*/ exception("Cannot find \"-\"!");
+	}
+	
+	return INT_MIN;
+}
 
 bool RtspRequest::ParseRequest(BufferReader *buffer)
 {
@@ -24,7 +83,55 @@ bool RtspRequest::ParseRequest(BufferReader *buffer)
 		method_ = RTCP;
 		return true;
 	}
-    
+
+	auto f = buffer->Peek();
+	auto first = buffer->FindFirstCrlf();
+	std::string s = std::string(f, first - f);
+	
+	if(s.find("HCPORT") != std::string::npos && oneSet)
+	{
+		auto remsize = s.length();
+		if constexpr (_DEBUG) std::cout << "HCPORT\n";
+		s.erase(0, 6);
+		char hcport[] = "HCPORT ";
+		const int size = 7 + 4 + 4 + 4 + 4;
+		int dynSize = size, index = 0;
+		char portsReq[size];
+		portsReq[15] = '\0';
+		memcpy_s(portsReq, size, hcport, 7); index += 7;
+		dynSize -= 7;
+		//if(s[0] != '-')
+		//{
+		//}
+		//s.erase(0, 1);
+		real_rtp_client_portT0 = extract_port(s, true);//s.substr(0, 4);
+		real_rtcp_client_portT0 = extract_port(s, true);
+		real_rtp_client_portT1 = extract_port(s, true);
+		real_rtcp_client_portT1 = extract_port(s, true);
+		//char* pEnd = tmp.c_str();
+		//real_rtp_client_portT0 = ReturnInt(tmp);
+		auto t0rtp = Parser::GetBytesFromInt(real_rtp_client_portT0);
+		auto t0rtcp = Parser::GetBytesFromInt(real_rtcp_client_portT0);
+		auto t1rtp = Parser::GetBytesFromInt(real_rtp_client_portT1);
+		auto t1rtcp = Parser::GetBytesFromInt(real_rtcp_client_portT1);
+
+		memcpy_s(portsReq + index, dynSize, t0rtp, 4); dynSize -= 4; index += 4;
+		memcpy_s(portsReq + index, dynSize, t0rtcp, 4); dynSize -= 4; index += 4;
+		memcpy_s(portsReq + index, dynSize, t1rtp, 4); dynSize -= 4; index += 4;
+		memcpy_s(portsReq + index, dynSize, t1rtcp, 4); dynSize -= 4; index += 4;
+
+		delete[] t0rtp;
+		delete[] t0rtcp;
+		delete[] t1rtp;
+		delete[] t1rtcp;
+		
+		std::cout << portsReq << "::rtpT0=" << real_rtp_client_portT0 << "::rtcpT0=" << real_rtcp_client_portT0
+			<< "::rtpT1=" << real_rtp_client_portT1 << "::rtcpT1=" << real_rtcp_client_portT1 << std::endl;
+		RewriteHCPORT(f, remsize + 1);
+		
+		pipe.Write(portsReq, size);
+		oneSet = false;
+	}
     bool ret = true;
 	while(1) {
 		if(state_ == kParseRequestLine) {
@@ -59,6 +166,20 @@ bool RtspRequest::ParseRequest(BufferReader *buffer)
 	return ret;
 }
 
+char* ChangeAddress(char *url, size_t size)
+{
+	if (url == nullptr) return nullptr;
+	std::string surl = std::string(url);
+
+	auto posRtsp = surl.find("rtsp://");
+	auto posPort = surl.find(":", posRtsp + strlen("rtsp://"));
+	auto posEndPort = surl.find("/", posPort);
+	surl.replace(posRtsp + strlen("rtsp://"), posPort - (posRtsp + strlen("rtsp://")), "127.0.0.1");
+	surl.replace(posPort + 1, posEndPort - posPort - 1, "8554");
+
+	strcpy_s(url, 512, surl.c_str());
+}
+
 bool RtspRequest::ParseRequestLine(const char* begin, const char* end)
 {
 	string message(begin, end);
@@ -66,9 +187,34 @@ bool RtspRequest::ParseRequestLine(const char* begin, const char* end)
 	char url[512] = {0};
 	char version[64] = {0};
 
+	//std::cout << (void*)begin << std::endl << (void*)end << " Count:" << end-begin << std::endl;
+	//std::cout << "Start\n" << message;
+	for (auto ch : message)
+	{
+		std::cout << ch;
+	}std::cout << std::endl;
+	
+	do
+	{
+		if (message[0] == ' ' && message.length() > 1)
+		{
+			message.erase(0, 1);
+		}
+		else
+		{
+			break;
+		}
+	}
+	while (true);
+
+	//std::cout << "End\n" << message;
+	
 	if(sscanf(message.c_str(), "%s %s %s", method, url, version) != 3) {
+		//std::cout << "FALSE";
 		return true; 
 	}
+
+	ChangeAddress(url, 512);
 
 	string method_str(method);
 	if(method_str == "OPTIONS") {
@@ -110,9 +256,14 @@ bool RtspRequest::ParseRequestLine(const char* begin, const char* end)
 		port = 554;
 	}
 	else {
+		std::cout << "\nurl=" << url
+			<< "\nip=" << ip
+			<< "\nport=" << port << std::endl;
 		return false;
 	}
-
+	std::cout << "\nurl=" << url
+		<< "\nip=" << ip
+		<< "\nport=" << port << std::endl;
 	request_line_param_.emplace("url", make_pair(string(url), 0));
 	request_line_param_.emplace("url_ip", make_pair(string(ip), 0));
 	request_line_param_.emplace("url_port", make_pair("", (uint32_t)port));
@@ -202,6 +353,8 @@ bool RtspRequest::ParseAccept(std::string& message)
 	return true;
 }
 
+bool fi = false;
+
 bool RtspRequest::ParseTransport(std::string& message)
 {
 	//std::cout << "Parsing: " << message << "\n";
@@ -225,7 +378,18 @@ bool RtspRequest::ParseTransport(std::string& message)
 				{
 					return false;
 				}
-
+				if (!fi)
+				{
+					rtp_port = clientRTP_t0;
+					rtcpPort = clientRTCP_t0;
+					fi = !fi;
+				}
+				else
+				{
+					rtp_port = clientRTP_t1;
+					rtcpPort = clientRTCP_t1;
+				}
+				std::cout << "New Client Ports: " << rtp_port << "-" << rtcpPort << std::endl;
 			}
 			else if((message.find("multicast", pos)) != std::string::npos) {
 				transport_ = RTP_OVER_MULTICAST;
@@ -454,6 +618,8 @@ int RtspRequest::BuildSetupMulticastRes(const char* buf, int buf_size, const cha
 	return returnValue(buf, buf_size, res);
 }
 
+bool track1 = false;
+
 int RtspRequest::BuildSetupUdpRes(const char* buf, int buf_size, uint16_t rtp_chn, uint16_t rtcp_chn, uint32_t session_id)
 {
 	//create encryption buffer if is needed
@@ -463,6 +629,31 @@ int RtspRequest::BuildSetupUdpRes(const char* buf, int buf_size, uint16_t rtp_ch
 	//Clear buffers
 	clear_buffers(buf, buf_size, res);
 	
+	//if(_DEBUG) std::cout << "PORTY PRE SERVER: " << rtp_chn << " - " << serverRTP_t0 << std::endl << rtcp_chn << " - " << serverRTCP_t0 << std::endl;
+	int rtp, rtcp;
+
+	//rtp = this->GetRtpPort();
+	//rtcp = this->GetRtcpPort();
+	
+	if (!track1)
+	{
+		rtp_chn = serverRTP_t0;
+		rtcp_chn = serverRTCP_t0;
+		rtp = real_rtp_client_portT0;
+		rtcp = real_rtcp_client_portT0;
+		track1 = !track1;
+	}else
+	{
+		rtp_chn = serverRTP_t1;
+		rtcp_chn = serverRTCP_t1;
+		rtp = real_rtp_client_portT1;
+		rtcp = real_rtcp_client_portT1;
+	}
+	std::cout << "SUMMARY:" <<
+		"\nrtp_ch: " << rtp_chn <<
+		"\nrtcp_ch: " << rtcp_chn <<
+		"\nrtp_client: " << rtp <<
+		"\nrtcp_client: " << rtcp << std::endl;
 	snprintf((char*)ptr, buf_size,
 			"RTSP/1.0 200 OK\r\n"
 			"CSeq: %u\r\n"
@@ -470,8 +661,8 @@ int RtspRequest::BuildSetupUdpRes(const char* buf, int buf_size, uint16_t rtp_ch
 			"Session: %u\r\n"
 			"\r\n",
 			this->GetCSeq(),
-			this->GetRtpPort(),
-			this->GetRtcpPort(),
+			rtp,
+			rtcp,
 			rtp_chn, 
 			rtcp_chn,
 			session_id);

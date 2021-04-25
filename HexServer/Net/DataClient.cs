@@ -12,7 +12,16 @@ namespace HexServer.Net
     public class DataClient
     {
         private IPEndPoint ip;
+        private int portRtp = -1, portRtcp = -1;
         private bool blocked;
+
+        public int PortRtp => portRtp;
+        public int PortRtcp => portRtcp;
+
+        public bool IsSetDataPorts()
+        {
+            return portRtcp > 0 && portRtp > 0;
+        }
 
         public DataClient(IPEndPoint ip, bool blocked)
         {
@@ -30,6 +39,15 @@ namespace HexServer.Net
         {
             get => ip;
             private init => ip = value;
+        }
+
+        public void SetupClientUdp(int rtp, int rtcp)
+        {
+            if (rtp <= 0) throw new ArgumentOutOfRangeException(nameof(rtp));
+            if (rtcp <= 0) throw new ArgumentOutOfRangeException(nameof(rtcp));
+
+            portRtp = rtp;
+            portRtcp = rtcp;
         }
 
         private sealed class IpEqualityComparer : IEqualityComparer<DataClient>

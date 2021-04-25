@@ -51,7 +51,6 @@ namespace LibNet.UDP
 
             var sended = client.Send(sendBytes, sendBytes.Length);
             PrintNet.printSend(client.Client, sended);
-
         }
 
         public void SendCallback(IAsyncResult ar)
@@ -65,13 +64,13 @@ namespace LibNet.UDP
         public override object Receive()
         {
             // Receive a message and write it to the console.
+            messageReceived = false;
             IPEndPoint e = _serverEndPoint;
 
             var s = new UDPState();
             s.e = e;
             s.u = client;
-
-            Console.WriteLine("listening for messages");
+            
             client.BeginReceive(new AsyncCallback(ReceiveCallback), s);
 
             // Do some work while we wait for a message. For this example, we'll just sleep
@@ -92,32 +91,14 @@ namespace LibNet.UDP
             state.buffer = u.EndReceive(ar, ref e);
 
             PrintNet.printRead(u.Client.LocalEndPoint, e, state.Buffer.Length);
-            state.e = e;
+            state.e = e; 
+            
             messageReceived = true;
         }
 
         public override void Release()
         {
             throw new NotImplementedException();
-        }
-
-        public void StartReceivingFromServerMeeting()
-        {
-            if (started)
-            {
-                return;
-            }
-
-            started = !started;
-
-            Task.Run(() =>
-            {
-                while (true)
-                {
-                    var state = (UDPState) Receive();
-                    return;
-                }
-            });
         }
     }
 }

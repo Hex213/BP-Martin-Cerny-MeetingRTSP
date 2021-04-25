@@ -56,11 +56,10 @@ using CryptoPP::GCM;
 using CryptoPP::GCM_TablesOption;
 
 #include <string>
-
 #include "Global.h"
 
-USING_NAMESPACE(CryptoPP)
-USING_NAMESPACE(std)
+using namespace CryptoPP;
+using namespace std;
 
 std::string m_ErrorMessage;
 

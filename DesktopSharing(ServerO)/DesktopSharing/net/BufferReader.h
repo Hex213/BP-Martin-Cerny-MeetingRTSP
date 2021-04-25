@@ -56,6 +56,12 @@ public:
 		return crlf == BeginWrite() ? nullptr : crlf;
 	}
 
+	void UpdateIndex(size_t size)
+	{
+		writer_index_ += size;
+		reader_index_ += size;
+	}
+
 	void RetrieveAll()  { 
 		writer_index_ = 0; 
 		reader_index_ = 0; 
@@ -90,6 +96,7 @@ public:
 
 	const char* BeginWrite() const
 	{ return Begin() + writer_index_; }
+
 	
 private:
 	char* Begin()

@@ -7,6 +7,7 @@ using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using LibHexCryptoStandard.Algoritm;
 using LibHexUtils.Arrays;
 using LibHexUtils.Random;
 using LibNet.Base;
@@ -49,38 +50,30 @@ namespace HexServer.Net
             else if(ParseHost(data, client, out id))
             {
                 var ss = ConnectionManager.CreateSession(id, client.Handler.Client.RemoteEndPoint);
-                var adminPortBytes = BitConverter.GetBytes(ss.MainPort);
-                var control = ss.Control;
                 
                 var l = Encoding.UTF8.GetBytes("HMET HOST OK ");
+                var cdat = ss.GetAdminConnection();
 
-                byte[] dataToSend = ByteArray.CopyBytes(0, l, adminPortBytes, control, id);// new byte[l.Length + adminPortBytes.Length + control.Length];
-                //Buffer.BlockCopy(l, 0, dataToSend, 0, l.Length);
-                //Buffer.BlockCopy(adminPortBytes, 0, dataToSend, l.Length, 4);
-                //Buffer.BlockCopy(control, 0, dataToSend, l.Length+4, control.Length);
-                
+                byte[] dataToSend = ByteArray.CopyBytes(0, l, cdat);
+
                 ConnectionManager.MainServer.Send(CipherManager.EncryptRSA(ConnectionManager.GetPublicKey(client.Handler.Client.RemoteEndPoint), dataToSend), client);
             }
-            else if (Parser.ParseID(data, out id))
+            else if (Parser.ParseConn(data, out id, out var port))
             {
-                var ses = ConnectionManager.isFreeID(id);
-                byte[] dataToSend = null;
-                if (ses != null)
+                Task.Run(() =>
                 {
-                    dataToSend = ByteArray.CopyBytes(0,
-                        Encoding.UTF8.GetBytes("HMET CONN OK "),
-                        ConnectionManager.MainIp.GetAddressBytes(), BitConverter.GetBytes(ses.Server.MainPort),
-                        HexRandom.GetRandomBytes(16));
-                }
-                else
-                {
-                    dataToSend = ByteArray.CopyBytes(0,
-                        Encoding.UTF8.GetBytes("HMET CONN OK "),
-                        new byte[] {0, 0, 0, 0}, new byte[] {0, 0, 0, 0},
-                        HexRandom.GetRandomBytes(16));
-                }
-
-                ConnectionManager.MainServer.Send(CipherManager.EncryptRSA(ConnectionManager.GetPublicKey(client.Handler.Client.RemoteEndPoint), dataToSend), client);
+                    var ses = ConnectionManager.isFreeID(id);//todo:is registred
+                    var key = ConnectionManager.GetPublicKey(client.Handler.Client.RemoteEndPoint);
+                    var toadmin = ByteArray.CopyBytes(0, Encoding.UTF8.GetBytes("HMET CONN"),
+                        ((IPEndPoint)(client.Handler.Client.LocalEndPoint)).Address.GetAddressBytes(), port,
+                        RsaOAEP.KeyToBytes(key));
+                    
+                    var reply = ses.Server.WaitForRequestFromAdmin(ses.Server.SendMessageAdmin(toadmin, true));
+                    if (reply?.Length != 0)
+                    {
+                        ConnectionManager.MainServer.Send(reply, client);
+                    }
+                });
             }
 
             Task.Run(() => ConnectionManager.MainServer.ReadTask(client));

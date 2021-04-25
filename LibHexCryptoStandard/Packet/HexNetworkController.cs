@@ -23,9 +23,9 @@ namespace LibHexCryptoStandard.Packet
 
             //todo: nastava chyba
             //1. get packet
-            hexPacketAes = HexPacketAES.GetDataFromPacket(readBuffer, (ushort)offset, useBase64);
+            hexPacketAes = HexPacketAES.CreatePacketForDecrypt(readBuffer, true, null, (ushort)offset, useBase64);
             //2. decrypt
-            Object decrypted = hexPacketAes.Decrypt(null);
+            Object decrypted = hexPacketAes.Decrypt();
             byte[] toCopy = (byte[])decrypted;
             //3. copy back to buffer
             Buffer.BlockCopy(toCopy, 0, readBuffer, offset, (int)hexPacketAes.DecryptedBytesSize);

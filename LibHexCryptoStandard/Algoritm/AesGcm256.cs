@@ -17,8 +17,6 @@ namespace LibHexCryptoStandard.Algoritm
 {
     public class AesGcm256
     {
-        
-
         private static readonly SecureRandom Random = new SecureRandom();
         private static byte[] key = null;
 

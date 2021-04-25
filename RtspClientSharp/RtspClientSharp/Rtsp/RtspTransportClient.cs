@@ -50,6 +50,23 @@ namespace RtspClientSharp.Rtsp
             return responseMessage;
         }
 
+        public Task SendPorts()
+        {
+            int fport = ((IPEndPoint) (NetworkManager.UdpSocketRtpT0.LocalEndPoint)).Port,
+                sport = ((IPEndPoint) (NetworkManager.UdpSocketRtcpT0.LocalEndPoint)).Port,
+                ffport = ((IPEndPoint) (NetworkManager.UdpSocketRtpT1.LocalEndPoint)).Port,
+                ssport = ((IPEndPoint) (NetworkManager.UdpSocketRtcpT1.LocalEndPoint)).Port;
+            var buff = ByteArray.CopyBytes(0, Encoding.UTF8.GetBytes("HCPORT-"), 
+                BitConverter.GetBytes(fport), Encoding.UTF8.GetBytes("-"), BitConverter.GetBytes(sport), Encoding.UTF8.GetBytes("-"),
+                BitConverter.GetBytes(ffport), Encoding.UTF8.GetBytes("-"), BitConverter.GetBytes(ssport),
+                Encoding.UTF8.GetBytes("\r\n"));
+
+            buff = CipherManager.ProcessData(buff, true, true);
+
+            //ByteArray.Print(buff, "Ports");
+            return WriteAsync(buff, 0, buff.Length);
+        }
+
         public async Task<RtspResponseMessage> ExecuteRequest(RtspRequestMessage requestMessage,
             CancellationToken token, int responseReadPortionSize = 0)
         {
@@ -81,8 +98,7 @@ namespace RtspClientSharp.Rtsp
 
             return responseMessage;
         }
-
-        //todo:sennd connection
+        
         public Task SendRequestAsync(RtspRequestMessage requestMessage, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
@@ -237,10 +253,10 @@ namespace RtspClientSharp.Rtsp
 
                     byte[] toDecrypt = new byte[totalRead];
                     Buffer.BlockCopy(_buffer, 0, toDecrypt, 0, totalRead);
-                    HexPacketAES hexPacketAes = new HexPacketAES(toDecrypt, ConnectionParameters.UseBase64, EncryptType.DecryptPacket);
+                    HexPacketAES hexPacketAes = HexPacketAES.CreatePacketForDecrypt(toDecrypt, true, null);//new HexPacketAES(toDecrypt, ConnectionParameters.UseBase64, EncryptType.Decrypt_hpkt));
                     byte[] decrypted = null;
                     //decrypted
-                    decrypted = (byte[])hexPacketAes.Decrypt(null);
+                    decrypted = (byte[])hexPacketAes.Decrypt();
                     //clear default buffer
                     Array.Clear(_buffer, 0, totalRead);
                     //Copy back to buffer

@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System;
+using System.Net.Sockets;
 using System.Text;
 
 namespace LibNet.Utils
@@ -6,9 +7,11 @@ namespace LibNet.Utils
     public class TCPState
     {
         // Client socket.  
-        public Socket workSocket = null;
+        private Socket workSocket = null;
+        // Client stream
+        private NetworkStream stream = null;
         // Size of receive buffer.  
-        public readonly int BufferSize;
+        public readonly int bufferSize;
         // Receive buffer.  
         public byte[] buffer;
         //Total readed/sended bytes
@@ -16,13 +19,33 @@ namespace LibNet.Utils
 
         public TCPState(int bufferSize = (4 * 1024))
         {
-            BufferSize = bufferSize;
-            buffer = new byte[BufferSize];
+            this.bufferSize = bufferSize;
+            buffer = new byte[this.bufferSize];
         }
 
         public Socket WorkSocket => workSocket;
 
-        public int BufferSize1 => BufferSize;
+        public NetworkStream Stream => stream;
+
+        public void setSocket(TcpClient client)
+        {
+            if (client != null)
+            {
+                stream = client.GetStream();
+                workSocket = client.Client;
+            }
+        }
+
+        public void setSocket(Socket socket)
+        {
+            if (socket != null)
+            {
+                stream = new NetworkStream(socket);
+                workSocket = socket;
+            }
+        }
+
+        public int BufferSize => bufferSize;
 
         public byte[] Buffer => buffer;
 

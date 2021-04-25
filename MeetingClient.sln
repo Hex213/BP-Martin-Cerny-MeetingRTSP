@@ -27,6 +27,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibHexCryptoStandard", "LibHexCryptoStandard\LibHexCryptoStandard.csproj", "{9FBF883F-31C2-4F35-9038-95D52708494F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestNet5compability", "TestNet5compability\TestNet5compability.csproj", "{FEEE7640-351C-4316-BFF2-201786836369}"
+	ProjectSection(ProjectDependencies) = postProject
+		{77F4AAA4-0051-480A-9168-A6CB8927FB6E} = {77F4AAA4-0051-480A-9168-A6CB8927FB6E}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeetingClientPlayer", "ClientPlayerM\MeetingClientPlayer.csproj", "{F1FF7C2A-0D41-402D-A2F0-1B278AB4A2B5}"
 EndProject

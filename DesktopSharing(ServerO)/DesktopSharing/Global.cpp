@@ -1,5 +1,4 @@
 #include "Global.h"
-
 #include <string>
 #include <limits>
 
@@ -9,6 +8,10 @@ extern std::string iv;
 #endif
 
 extern std::string m_ErrorMessage;
+
+NamedPipe pipe;
+HANDLE hPipe1, hPipe2;
+BOOL Finished;
 
 char* encrypt(const char* message, size_t& size)
 {
@@ -158,3 +161,10 @@ std::string GetLastCryptoError()
 {
 	return m_ErrorMessage;
 }
+
+void ReverseBytes(char* start, int size)
+{
+	char* istart = start, * iend = istart + size;
+	std::reverse(istart, iend);
+}
+

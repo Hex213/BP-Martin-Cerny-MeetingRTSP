@@ -1,7 +1,3 @@
-﻿6. vytvorit proxy server // c#
-	6a. network manager
-	6b. sending confirm
-	6c. admin system
-7. create controll stream
-8. test
-9. refactor
+﻿1. posli 2 porty na SS -> povol 2x proxy -> posli 2 porty na SS -> povol 2x proxy -> spusti proxy
+4. odskušaj
+5. Odstraňuj warning

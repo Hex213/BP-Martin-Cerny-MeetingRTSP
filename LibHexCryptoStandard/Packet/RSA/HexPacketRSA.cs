@@ -33,14 +33,14 @@ namespace LibHexCryptoStandard.Packet.RSA
             return HexPacket.Pack(RsaOAEP.KeyToBytes(key));
         }
 
-        public static RsaKeyParameters GetKeyFromPacket(byte[] hPacket, bool exceptPrivateKey)
+        public static RsaKeyParameters GetKeyFromPacket(byte[] hPacket, bool exceptPrivateKey, bool inHpkt = true)
         {
-            if (hPacket.Length <= 8)
+            if (hPacket.Length <= 8 && inHpkt)
             {
                 throw new PacketException("Bad array struct!");
             }
 
-            var data = HexPacket.Unpack(hPacket, 0);
+            var data = inHpkt ? HexPacket.Unpack(hPacket, 0) : hPacket;
 
             return RsaOAEP.BytesTokey(data, exceptPrivateKey);
         }
@@ -53,7 +53,7 @@ namespace LibHexCryptoStandard.Packet.RSA
         /// <param name="encryptKey">Key used for encryption</param>
         /// <param name="offset">Start offset of data</param>
         /// <returns>Encrypted message (OAEP)</returns>
-        public byte[] Encrypt(RsaKeyParameters encryptKey, int offset = 0)
+        public byte[] Encrypt(RsaKeyParameters encryptKey, bool isInPacket = true, int offset = 0)
         {
             if (encryptKey is null)
             {
@@ -65,7 +65,7 @@ namespace LibHexCryptoStandard.Packet.RSA
                 throw new TypeInitializationException("HexPacketRSA", new Exception("Not initialized"));
             }
             
-            return HexPacket.Pack(RsaOAEP.Encrypt(encryptKey, data, offset));
+            return isInPacket ? HexPacket.Pack(RsaOAEP.Encrypt(encryptKey, data, offset)) : RsaOAEP.Encrypt(encryptKey, data, offset);
         }
         #endregion
 

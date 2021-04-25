@@ -272,6 +272,7 @@
     <ClCompile Include="libyuv\source\video_common.cc" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="NamedPipe.cpp" />
     <ClCompile Include="net\Acceptor.cpp" />
     <ClCompile Include="net\BufferReader.cpp" />
     <ClCompile Include="net\BufferWriter.cpp" />
@@ -290,6 +291,7 @@
     <ClCompile Include="net\Timer.cpp" />
     <ClCompile Include="net\Timestamp.cpp" />
     <ClCompile Include="Overlay.cpp" />
+    <ClCompile Include="Parser.cpp" />
     <ClCompile Include="ScreenLive.cpp" />
     <ClCompile Include="xop\AACSource.cpp" />
     <ClCompile Include="xop\amf.cpp" />
@@ -373,6 +375,7 @@
     <ClInclude Include="libyuv\include\libyuv.h" />
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="md5\md5.hpp" />
+    <ClInclude Include="NamedPipe.h" />
     <ClInclude Include="net\Acceptor.h" />
     <ClInclude Include="net\BufferReader.h" />
     <ClInclude Include="net\BufferWriter.h" />
@@ -396,6 +399,7 @@
     <ClInclude Include="net\Timer.h" />
     <ClInclude Include="net\Timestamp.h" />
     <ClInclude Include="Overlay.h" />
+    <ClInclude Include="Parser.h" />
     <ClInclude Include="ScreenLive.h" />
     <ClInclude Include="xop\AACSource.h" />
     <ClInclude Include="xop\amf.h" />
