@@ -317,7 +317,7 @@ int RtpConnection::SendRtpOverTcp(MediaChannelId channel_id, RtpPacket pkt)
 	conn->Send((char*)rtpPktPtr, pkt.size);
 	return pkt.size;
 }
-
+int i = 0;
 int RtpConnection::SendRtpOverUdp(MediaChannelId channel_id, RtpPacket pkt)
 {
 	//media_channel_info_[channel_id].octetCount  += pktSize;
@@ -342,7 +342,8 @@ int RtpConnection::SendRtpOverUdp(MediaChannelId channel_id, RtpPacket pkt)
 	free(hpkt);
 #else
 #if NETWORK_OUTPUT
-	std::cout << "SendUDP(" << pkt.size - 4 << ")" << std::endl;
+	if(i < 10) std::cout << "SendUDP(" << pkt.size - 4 << ")" << std::endl;
+	i++;
 #endif
 	ret = sendto(rtpfd_[channel_id], (const char*)pkt.data.get()+4, pkt.size-4, 0, 
 					(struct sockaddr *)&(peer_rtp_addr_[channel_id]),

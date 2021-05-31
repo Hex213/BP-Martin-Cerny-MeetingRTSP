@@ -7,8 +7,10 @@
 #include <iostream>
 
 #include "Global.h"
+#include "Parser.h"
 
 using namespace xop;
+
 uint32_t xop::ReadUint32BE(char* data)
 {
 	uint8_t* p = (uint8_t*)data;
@@ -57,7 +59,52 @@ BufferReader::BufferReader(uint32_t initialSize)
     : buffer_(new std::vector<char>(initialSize))
 {
 	buffer_->resize(initialSize);
-}	
+}
+
+std::deque<BufferReader::Packet> BufferReader::ParsePakets(char* data, size_t& len)
+{
+	std::deque<BufferReader::Packet> deq;
+	deq.clear();
+	char* nulled = const_cast<char*>("\0\0\0\0");
+	
+	int off = 0;
+	std::cout << "Parsing data:\n";
+	while(true)
+	{
+		auto pos = Parser::findInPtr(data, len, nulled, 4, off);
+		if(pos <= -1)
+		{
+			break;
+		}
+		
+		auto len = Parser::GetIntFromBytes(data + pos + 4);
+		ReverseBytes(data + pos + 4, 4);
+
+		//std::cout << "DATA--\n";
+		//for (int i = 0; i < len + 8; i++)
+		//{
+		//	std::cout << +((unsigned char)(data + pos)[i]) << "-";
+		//}std::cout << std::endl;
+		
+		//std::cout << "Data len = " << len;
+		char* pkt = (char*)malloc(len + 8);
+		std::memcpy(pkt, data + pos, len + 8);
+		//std::cout << "PKT--\n";
+		//for (int i = 0; i < len + 8; i++)
+		//{
+		//	std::cout << +((unsigned char)(pkt)[i]) << "-";
+		//}std::cout << std::endl;
+
+		off += 8 + len;
+		//std::cout << ", offset = " << off << "\n";
+
+		deq.push_back(Packet{ len + 8, pkt });
+		std::cout << "Packet: " << static_cast<void*>(pkt) << "::" << len + 8 << "\n";
+		
+	}
+	std::cout << "END\n";
+	return deq;
+}
 
 BufferReader::~BufferReader()
 {
@@ -79,8 +126,8 @@ int BufferReader::Read(SOCKET sockfd, int &offset)
 	int bytes_read = ::recv(sockfd, beginWrite(), MAX_BYTES_PER_READ, 0);
 
 	if(bytes_read > 0) {
-		//std::string s(buffer_->data(), bytes_read);
-
+		std::string s(buffer_->data(), bytes_read);
+		std::cout << "\nRead( " << bytes_read << ")\n";
 		writer_index_ += bytes_read;
 	}
 

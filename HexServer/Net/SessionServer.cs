@@ -290,6 +290,8 @@ namespace HexServer.Net
                     buf = lastState.Buffer;
                 }
 
+                //if(buf.Length == 0) return;
+                
                 var decr = CipherManager.AesEngine(aesPassAdmin, buf, false);
 
                 if (Parser.ParseOption(decr, out var type, out var obj))

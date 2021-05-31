@@ -24,6 +24,8 @@ namespace LibRtspClientSharp.Hex
         private static byte[] AesKeyAdmin = null;
         private static byte[] AesKeyData = null;
 
+        private static bool CanGet = false;
+
         public static byte[] HashId => hashID;
 
         public static void NewID()
@@ -35,6 +37,19 @@ namespace LibRtspClientSharp.Hex
             
             hashID = SHA.SHA3(toHash, 256);
             Console.WriteLine("ID: " + System.Convert.ToBase64String(hashID));
+        }
+
+        public static byte[] GetDataKey()
+        {
+            if (CanGet)
+            {
+                CanGet = false;
+                return AesKeyData;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public static byte[] GetKeyToSend()
@@ -162,12 +177,14 @@ namespace LibRtspClientSharp.Hex
             Buffer.BlockCopy(rkey, 0, toKey, 0, rkey.Length);
             Buffer.BlockCopy(hkey, 0, toKey, rkey.Length, hkey.Length);
             AesKeyData = SHA.SHA3(toKey, bitLen);
+
+            CanGet = true;
         }
 
         public static byte[] ProcessData(byte[] data, bool encrypt, bool hpkt)
         {
             if (AesKeyData == null) return data;
-            var pkt = encrypt ? HexPacketAES.CreatePacketForEncrypt(data, hpkt, AesKeyData) : HexPacketAES.CreatePacketForDecrypt(data, hpkt, AesKeyData);
+            var pkt = encrypt ? HexPacketAES.CreatePacketForEncrypt(data, hpkt, AesKeyData, NetworkManager.ConnectionParameters.UseBase64) : HexPacketAES.CreatePacketForDecrypt(data, hpkt, AesKeyData, 0, NetworkManager.ConnectionParameters.UseBase64);
             return encrypt ? (byte[])pkt.Encrypt() :(byte[])pkt.Decrypt();
         }
     }

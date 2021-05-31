@@ -311,9 +311,10 @@ namespace LibNet.Meeting.Parsers
             return false;
         }
 
-        public static bool IPCParseDefaultPorts()
+        public static bool IPCParseConf(byte[] buff)
         {
-            return false;//todo: find PSP=
+            var s = Parse(buff, Encoding.UTF8.GetBytes("OK"), false);
+            return s <= 5 && s >= 0;
         }
 
         public static bool IPCParseServPorts(byte[] buff, out int rtpPort, out int rtcpPort)

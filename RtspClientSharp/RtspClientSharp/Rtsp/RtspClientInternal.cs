@@ -14,6 +14,7 @@ using LibHexCryptoStandard.Algoritm;
 using LibHexCryptoStandard.Packet;
 using LibHexCryptoStandard.Packet.AES;
 using LibNet.Meeting.Packets.HexPacket;
+using LibNet.Utils;
 using LibRtspClientSharp.Hex;
 using Org.BouncyCastle.Asn1.Cmp;
 using RtspClientSharp.Codecs.Audio;
@@ -79,6 +80,7 @@ namespace RtspClientSharp.Rtsp
             if (NetworkManager.ConnectionParameters.UseServer)
             {
                 await _rtspTransportClient.SendPorts();
+                Thread.Sleep(10);
             }
 
             //cseq 1
@@ -602,12 +604,11 @@ namespace RtspClientSharp.Rtsp
             {
                 int read = await client.ReceiveAsync(bufferSegment, SocketFlags.None);
                 byte[] toProcess = null;
-                HexPacketAES hexPacketAes = null;
 
-                DecryptData(read, bufferSegment, ref hexPacketAes, ref toProcess);
+                DecryptData(read, bufferSegment, ref toProcess);
 
-                var payloadSegment = hexPacketAes != null
-                    ? new ArraySegment<byte>(toProcess, 0, (int)hexPacketAes.DecryptedBytesSize)
+                var payloadSegment = toProcess != null
+                    ? new ArraySegment<byte>(toProcess, 0, toProcess.Length)
                     : new ArraySegment<byte>(readBuffer, 0, read);
 
                 //var outbytes = await HexNetworkController.ReadBySocket(client, bufferSegment, 0, _connectionParameters.Enryption,
@@ -626,6 +627,14 @@ namespace RtspClientSharp.Rtsp
 
                 IEnumerable<RtcpPacket> packets = reportsProvider.GetReportPackets();
                 ArraySegment<byte> byteSegment = SerializeRtcpPackets(packets, bufferStream);
+
+                //Console.Write("!!! - ");
+                //PrintNet.printSend(client, byteSegment.Count);
+                //if (NetworkManager.ConnectionParameters.Enryption)
+                //{
+                //    var encr = CipherManager.ProcessData(byteSegment.Array, true, true);
+                //    byteSegment = new ArraySegment<byte>(encr);
+                //}
 
                 await client.SendAsync(byteSegment, SocketFlags.None);
             }
@@ -657,8 +666,8 @@ namespace RtspClientSharp.Rtsp
             byte[] streamBuffer = bufferStream.GetBuffer();
             return new ArraySegment<byte>(streamBuffer, 0, (int)bufferStream.Position);
         }
-        //todo: mozno nepotrebne
-        private void DecryptData(in int read, in ArraySegment<byte> bufferSegment, ref HexPacketAES hexPacketAes, ref byte[] toProcess)
+
+        private void DecryptData(in int read, in ArraySegment<byte> bufferSegment, ref byte[] toProcess)
         {
             //Vypis
             if (_connectionParameters.UseBase64 && !Global.strictPrint)
@@ -677,13 +686,13 @@ namespace RtspClientSharp.Rtsp
                 }
             }
 
-            //desifrovanie
+            //desifrovanie TODO: asi chyba
             if (!_connectionParameters.Enryption || read <= 8) return;
             var toDecryptBytes = new byte[read];
             Buffer.BlockCopy(bufferSegment.Array, 0, toDecryptBytes, 0, read);
-            hexPacketAes = HexPacketAES.CreatePacketForDecrypt(toDecryptBytes, true, null);//new HexPacketAES(toDecryptBytes, _connectionParameters.UseBase64, EncryptType.Decrypt);
-
-            toProcess = (byte[]) hexPacketAes.Decrypt();
+            //hexPacketAes = HexPacketAES.CreatePacketForDecrypt(toDecryptBytes, true, null);//new HexPacketAES(toDecryptBytes, _connectionParameters.UseBase64, EncryptType.Decrypt);
+            toProcess = CipherManager.ProcessData(toDecryptBytes, false, true);
+            //toProcess = (byte[]) hexPacketAes.Decrypt();
         }
     }
 }

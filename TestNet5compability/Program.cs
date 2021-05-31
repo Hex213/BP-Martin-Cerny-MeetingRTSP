@@ -11,6 +11,7 @@ using LibHexCryptoStandard.Packet.RSA;
 using LibNet.Meeting.Packets.HexPacket;
 using LibNet.Meeting.Parsers;
 using LibRtspClientSharp.Hex;
+using LibRtspClientSharp.Hex.Exceptions;
 using Org.BouncyCastle.Crypto.Parameters;
 using RtspClientSharp;
 using RtspClientSharp.Rtsp;
@@ -27,10 +28,44 @@ namespace TestNet5compability
                 CipherManager.NewID();
                 NetworkManager.InitConParams(new ConnectionParameters(new Uri("rtsp://127.0.0.1:1/"))
                 {
-                    Enryption = false,
-                    UseServer = true
+                    Enryption = true,
+                    UseServer = true,
+                    UseBase64 = false,
+                    RtpTransport = RtpTransportProtocol.UDP
                 });
-                NetworkManager.Connect(IPAddress.Parse("127.0.0.1"), 40000, 2, 5);
+                do
+                {
+                    try
+                    {
+                        NetworkManager.Connect(IPAddress.Parse("127.0.0.1"), 40000, 2, 5);
+                        break;
+                    }
+                    catch (ConnectionException)
+                    {
+                        do
+                        {
+                            Console.WriteLine("Cannot connect to server!\nDo you want to try to connect again?\n(y/n): ");
+                            var line = Console.ReadLine();
+                            bool BREAK = false;
+                            if (line != null)
+                            {
+                                line = line.ToLower();
+                                switch (line[0])
+                                {
+                                    case 'y':
+                                        BREAK = true;
+                                        break;
+                                    case 'n':
+                                        return;
+                                }
+                            }
+
+                            if (!BREAK) continue;
+                            BREAK = false;
+                            break;
+                        } while (true);
+                    }
+                } while (true);
                 NetworkManager.HostMet(true, "live", "test");
             }
             catch (Exception e)

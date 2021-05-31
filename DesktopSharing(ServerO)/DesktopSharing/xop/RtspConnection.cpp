@@ -9,6 +9,8 @@
 #include "Parser.h"
 #include "net/SocketUtil.h"
 
+#include "Global.h"
+
 #define USER_AGENT "-_-"
 #define RTSP_DEBUG 1
 #define MAX_RTSP_MESSAGE_SIZE 2048
@@ -220,7 +222,13 @@ void RtspConnection::HandleRtcp(BufferReader& buffer)
 void RtspConnection::HandleRtcp(SOCKET sockfd)
 {
     char buf[1024] = {0};
-    if(recv(sockfd, buf, 1024, 0) > 0) {
+	int r = recv(sockfd, buf, 1024, 0);
+    if(r > 0) {
+		char buf[INET_ADDRSTRLEN] = "";
+		struct sockaddr_in name;
+		socklen_t len = sizeof(name);
+		inet_ntop(AF_INET, &name.sin_addr, buf, sizeof buf);
+		std::cout << "\nRead (" << buf << ") (" << r << ")\n";
         KeepAlive();
     }
 }
@@ -341,6 +349,8 @@ void RtspConnection::HandleCmdSetup()
 
 			uint16_t serRtpPort = rtp_conn_->GetRtpPort(channel_id);
 			uint16_t serRtcpPort = rtp_conn_->GetRtcpPort(channel_id);
+
+#if USE_PROXY
 			std::cout << "\nServer_Ports: rtp=" << serRtpPort << ", rtcp=" << serRtcpPort << std::endl;
 
 			char prefix[] = "PSP=";
@@ -357,6 +367,7 @@ void RtspConnection::HandleCmdSetup()
 			pipe.WaitForConfirm();
 			std::cout << "OK" << std::endl;
 			firstSetup = !firstSetup;
+#endif
 			
 			size = rtsp_request_->BuildSetupUdpRes(res.get(), 4096, serRtpPort, serRtcpPort, session_id);
 		}

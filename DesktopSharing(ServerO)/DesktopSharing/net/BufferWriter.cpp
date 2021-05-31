@@ -107,6 +107,10 @@ bool BufferWriter::Append(const char* data, uint32_t size, uint32_t index)
 	{
 		bufferEncryp_->emplace(std::move(hpkt));
 	}
+	else
+	{
+		return false;
+	}
 #endif
 
 	buffer_->emplace(std::move(pkt));

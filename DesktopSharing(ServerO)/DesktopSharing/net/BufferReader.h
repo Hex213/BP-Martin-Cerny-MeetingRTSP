@@ -10,6 +10,7 @@
 #include <algorithm>  
 #include <memory>  
 #include "Socket.h"
+#include <deque>
 
 namespace xop
 {
@@ -23,7 +24,14 @@ uint16_t ReadUint16LE(char* data);
     
 class BufferReader
 {
-public:	
+public:
+	struct Packet
+	{
+		int size;
+		char* data;
+	};
+	std::deque<Packet> ParsePakets(char* data, size_t& len);
+	
 	static const uint32_t kInitialSize = 2048;
 	BufferReader(uint32_t initialSize = kInitialSize);
 	virtual ~BufferReader();
@@ -99,6 +107,8 @@ public:
 
 	
 private:
+	static std::deque<char*> pkts;
+	
 	char* Begin()
 	{ return &*buffer_->begin(); }
 

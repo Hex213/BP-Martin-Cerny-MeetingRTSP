@@ -12,5 +12,6 @@ private:
 	static bool ParseNON(char* data, size_t size);
 	static bool ParsePorts(char* data, size_t size);
 	static bool ParseConn(char* data, size_t size);
+	static bool ParseKey(char* data, size_t size, char*& key);
 };
 

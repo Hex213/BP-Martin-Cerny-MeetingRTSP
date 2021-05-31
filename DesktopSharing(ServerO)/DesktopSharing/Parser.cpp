@@ -127,9 +127,28 @@ bool Parser::ParseNON(char* data, size_t size)
 	return findInPtr(data, size, conf, 3) != -1;
 }
 
+bool Parser::ParseKey(char* data, size_t size, char*& key)
+{
+	char conf[] = "KEY";
+	auto f = findInPtr(data, size, conf, 3);
+	if(f != -1)
+	{
+		std::cout << "--FOUND--";
+		key = data + f + 3;
+		return true;
+	}
+	return false;
+}
+
+#if ENCRYPT_PKT
+extern std::string key;
+extern std::string iv;
+#endif
+
 void Parser::ParseData(char* data, size_t size)
 {
 	std::cout << "Parsing..." << size << std::endl;
+	char* tmp = nullptr;
 
 	std::cout << "\nType:\n";
 	if(ParsePorts(data, size))
@@ -155,6 +174,27 @@ void Parser::ParseData(char* data, size_t size)
 		{
 			std::cout << "Err\n";
 		}
+	}
+	else if(ParseKey(data, size, tmp))
+	{
+		if(tmp == nullptr)
+		{
+			std::cout << "Err\n";
+		}
+		std::cout << "Key\nSize: " << size << ", Key len: " << size - (tmp - data) << "\n";
+#if ENCRYPT_PKT
+		if(size - (tmp - data) != 32)
+		{
+			throw std::exception("Key error!");
+		}
+		key = std::string(tmp, 32);
+		for (int i = 0; i < 32; ++i)
+		{
+			std::cout << +((unsigned char)key[i]) << "-";
+		}std::cout << std::endl;
+		
+		pipe.Write((char*)("OK\0"), 3);
+#endif
 	}
 	else
 	{

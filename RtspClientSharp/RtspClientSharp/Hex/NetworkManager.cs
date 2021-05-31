@@ -18,6 +18,7 @@ using LibNet.Meeting;
 using LibNet.Meeting.Packets.HexPacket;
 using LibNet.Meeting.Parsers;
 using LibNet.Utils;
+using LibRtspClientSharp.Hex.Exceptions;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.Utilities.IO;
@@ -47,7 +48,6 @@ namespace LibRtspClientSharp.Hex
 
         public static void InitConParams(ConnectionParameters conParam)
         {
-
             _connectionParameters = conParam ?? throw new ArgumentNullException(nameof(conParam));
         }
 
@@ -71,7 +71,7 @@ namespace LibRtspClientSharp.Hex
 
             if (!client.IsConnected())
             {
-                //TODO: throw new excpet
+                throw new ConnectionException("Client cannot connect");
             }
         }
 
@@ -107,7 +107,8 @@ namespace LibRtspClientSharp.Hex
         {
             UdpClient udpClient = new UdpClient();
             
-            UdpSocket?.Dispose();
+            //UdpSocket?.Dispose();
+            UdpSocket?.Close();
             UdpSocket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp)
             {
                 ReceiveBufferSize = NetworkClientFactory.GetUdpReceiveBufferDefaultSize,
@@ -119,7 +120,8 @@ namespace LibRtspClientSharp.Hex
         }
         private static void DataSockets()
         {
-            TcpSocket?.Dispose();
+            //TcpSocket?.Dispose();
+            TcpSocket?.Close();
             TcpSocket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp)
             {
                 ReceiveBufferSize = NetworkClientFactory.GetTcpReceiveBufferDefaultSize,
@@ -132,8 +134,8 @@ namespace LibRtspClientSharp.Hex
             CreateUdp(ref UdpSocketRtcpT0); 
             CreateUdp(ref UdpSocketRtpT1);
             CreateUdp(ref UdpSocketRtcpT1);
-            Console.WriteLine("My ports \nt0: rtp=" + ((IPEndPoint) UdpSocketRtpT0.LocalEndPoint).Port + ",rtcp=" + ((IPEndPoint)UdpSocketRtcpT0.LocalEndPoint).Port +
-                              "t1: rtp=" + ((IPEndPoint)UdpSocketRtpT1.LocalEndPoint).Port + ",rtcp=" + ((IPEndPoint)UdpSocketRtcpT1.LocalEndPoint).Port);
+            Console.WriteLine("My ports:\nt0: rtp=" + ((IPEndPoint) UdpSocketRtpT0.LocalEndPoint).Port + ",rtcp=" + ((IPEndPoint)UdpSocketRtcpT0.LocalEndPoint).Port +
+                              "\nt1: rtp=" + ((IPEndPoint)UdpSocketRtpT1.LocalEndPoint).Port + ",rtcp=" + ((IPEndPoint)UdpSocketRtcpT1.LocalEndPoint).Port);
         }
 
         public static void Connect(System.Net.IPAddress ip, int port, byte seconds, byte times)
@@ -153,9 +155,9 @@ namespace LibRtspClientSharp.Hex
             _clientControlTcp?.Release();
             _clientControlTcp = new TCP.Client();
             var client = _clientControlTcp;
-            
+
             _connect(_clientControlTcp, ip, port, 2, 5);
-            
+
             var b = HexPacket.Pack(Encoding.UTF8.GetBytes("HMET HI"));
 
             client.Send(b);
@@ -201,6 +203,8 @@ namespace LibRtspClientSharp.Hex
             var confMsgBytes = CipherManager.EncryptControl(key);
             _clientDataUdp?.Release();
             _clientDataUdp = new UDP.Client();
+
+
             _connect(_clientDataUdp, ip, port, 1, 5);
             _serverIp = new IPEndPoint(ip, port);
             _clientDataUdp.Send(confMsgBytes);
@@ -319,6 +323,10 @@ namespace LibRtspClientSharp.Hex
                 toSend = CipherManager.EcryptAdminData(toSend);
                 _clientDataUdp.Send(toSend);
             }
+            else if(Parser.IPCParseConf(buff))
+            {
+                IPC.conf = true;
+            }
         }
 
         public static object IPC_Read(object o)
@@ -359,8 +367,14 @@ namespace LibRtspClientSharp.Hex
                 HostSerMet(id);
             }
 
-            IPC.Start("HMET"+id, IPC_Read);
-            CipherManager.InitEncryption(key);
+            IPC.Start("HMET" + id, IPC_Read);
+            if (_connectionParameters.Enryption)
+            {
+                CipherManager.InitEncryption(key);
+                IPC.Send(ByteArray.CopyBytes(0, Encoding.UTF8.GetBytes("KEY"), CipherManager.GetDataKey()));
+                IPC.WaitForConf();
+            }
+            
             StartRecvAdmin();
         }
 
@@ -399,6 +413,24 @@ namespace LibRtspClientSharp.Hex
 
                 return null;
             }
+        }
+
+        public static void updateUri(Uri uri)
+        {
+            var cparam = new ConnectionParameters(uri)
+            {
+                UseBase64 = _connectionParameters.UseBase64,
+                CancelTimeout = _connectionParameters.CancelTimeout,
+                ConnectTimeout = _connectionParameters.ConnectTimeout,
+                Enryption = _connectionParameters.Enryption,
+                ReceiveTimeout = _connectionParameters.ReceiveTimeout,
+                RequiredTracks = _connectionParameters.RequiredTracks,
+                RtpTransport = _connectionParameters.RtpTransport,
+                UserAgent = _connectionParameters.UserAgent,
+                UseServer = _connectionParameters.UseServer
+            };
+
+            _connectionParameters = cparam;
         }
     }
 }

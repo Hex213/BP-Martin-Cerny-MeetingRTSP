@@ -5,13 +5,15 @@
 #include "NamedPipe.h"
 
 //switch encryption/decryption(0,1)
-#define ENCRYPT_PKT 0
+#define ENCRYPT_PKT 1
 //force use base64 encryption(f,t)
 #define ENCRYPT_USEBASE64 0
 //switch encryption in moment when is request build
 #define ENCRYPT_WHENBUILD 0
 //turn on/off output
 #define NETWORK_OUTPUT 0
+
+#define USE_PROXY 1
 
 static std::string hexKey = "2192B39425BBD08B6E8E61C5D1F1BC9F428FC569FBC6F78C0BC48FCCDB0F42AE";
 static std::string hexIV = "E1E592E87225847C11D948684F3B070D";

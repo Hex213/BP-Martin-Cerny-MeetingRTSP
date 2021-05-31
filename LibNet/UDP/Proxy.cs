@@ -115,7 +115,7 @@ namespace LibNet.UDP
                         if (r == null) continue;
                         if (r?.Length > 0)
                         {
-                            if(!register.IsPresent(1 << 3))
+                            if(register.IsPresent(1 << 2))
                             {
                                 Console.Write("PX(C->P) ");
                                 PrintNet.printRead(_clCenter.Client.LocalEndPoint, _ipSrc, r.Length);
@@ -125,7 +125,7 @@ namespace LibNet.UDP
                             {
                                 r = ByteArray.SubArray(r, s);
                                 s += _centerCl.Send(r, r.Length);
-                                if(!register.IsPresent(1 << 3))
+                                if(register.IsPresent(1 << 2))
                                 {
                                     Console.Write("PX(P->D) ");
                                     PrintNet.printSend(_clCenter.Client.LocalEndPoint, _ipDes, s);
@@ -148,7 +148,7 @@ namespace LibNet.UDP
                         if (r == null) continue;
                         if (r?.Length > 0)
                         {
-                            if (!register.IsPresent(1 << 3))
+                            if (register.IsPresent(1 << 2))
                             {
                                 Console.Write("PX(D->P) ");
                                 PrintNet.printRead(_centerCl.Client.LocalEndPoint, _ipDes, r.Length);
@@ -158,7 +158,7 @@ namespace LibNet.UDP
                             {
                                 r = ByteArray.SubArray(r, s);
                                 s += _clCenter.Send(r, r.Length);
-                                if (!register.IsPresent(1 << 3))
+                                if (register.IsPresent(1 << 2))
                                 {
                                     Console.Write("PX(P->C) ");
                                     PrintNet.printSend(_clCenter.Client.LocalEndPoint, _ipSrc, s);

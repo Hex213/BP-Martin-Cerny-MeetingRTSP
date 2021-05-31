@@ -97,7 +97,7 @@ int main(int argc, char **argv)
 	throw new std::exception("Not allowed definitions!");
 #endif
 #if ENCRYPT_PKT
-	HexDecode(hexKey, key);
+	//HexDecode(hexKey, key);
 	HexDecode(hexIV, iv);
 #endif
 	////Pipe Init Data

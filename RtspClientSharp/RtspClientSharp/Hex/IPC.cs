@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 using CSNamedPipe;
 using LibHexUtils.Arrays;
 
@@ -13,9 +14,22 @@ namespace LibRtspClientSharp.Hex
         private static NamedPipeServer Pin;
         private static NamedPipeServer Pout;
 
+        public static bool conf = false;
+
+        public static void WaitForConf()
+        {
+            while (true)
+            {
+                if (conf) break;
+                Thread.Sleep(10);
+            }
+
+            conf = false;
+        }
+
         public static bool IsStarted()
         {
-            return proc.Id != 0 && !proc.HasExited;
+            return proc.Id != 0 && !proc.HasExited && Pout.clientse != null && Pin.clientse != null;
         }
 
         private static void RunHosting(string name)
@@ -44,9 +58,20 @@ namespace LibRtspClientSharp.Hex
 
         public static void Send(byte[] data, int startOff = 0, int count = 0)
         {
+            byte waitTick = 0;
+
             if (data == null) throw new ArgumentNullException(nameof(data));
             if (startOff < 0) throw new ArgumentOutOfRangeException(nameof(startOff));
             if (count < 0) throw new ArgumentOutOfRangeException(nameof(count));
+
+            while (!IsStarted() && waitTick < 200)
+            {
+                Thread.Sleep(20);
+                waitTick++;
+            }
+
+            if (waitTick >= 200) 
+                throw new Exception("Cannot send data!");
 
             var send = startOff == 0 && count == 0 ? data : ByteArray.SubArray(data, startOff, count);
             Pout.SendMessage(send, Pout.clientse);
@@ -63,6 +88,16 @@ namespace LibRtspClientSharp.Hex
             Pout.Start();
 
             RunHosting(name);
+
+            var f = name.IndexOf("HMET");
+            if (f == -1)
+            {
+                throw new Exception("Cannot find id!");
+            }
+
+            var tosend = name.Substring(f + 4);
+            tosend = "ID" + tosend;
+            Send(Encoding.UTF8.GetBytes(tosend));
         }
     }
 }

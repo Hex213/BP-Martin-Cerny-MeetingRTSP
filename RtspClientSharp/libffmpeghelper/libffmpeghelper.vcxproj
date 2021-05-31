@@ -89,7 +89,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(ProjectDir)x86\$(Configuration)\</IntDir>
-    <OutDir>$(ProjectDir)x86\$(Configuration)\</OutDir>
+    <OutDir>D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\Output</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -99,7 +99,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IntDir>$(ProjectDir)x86\$(Configuration)\</IntDir>
-    <OutDir>$(ProjectDir)x86\$(Configuration)\</OutDir>
+    <OutDir>D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\Output</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>

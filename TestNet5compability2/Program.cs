@@ -3,7 +3,9 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using LibRtspClientSharp.Hex;
+using LibRtspClientSharp.Hex.Exceptions;
 using RtspClientSharp;
+using RtspClientSharp.RawFrames;
 using RtspClientSharp.Rtsp;
 
 namespace TestNet5compability2
@@ -19,25 +21,62 @@ namespace TestNet5compability2
             CipherManager.NewID();
             NetworkManager.InitConParams(new ConnectionParameters(new Uri("rtsp://127.0.0.1:1/"))
             {
-                Enryption = !enable,
-                UseServer = enable
+                Enryption = enable,
+                UseBase64 = !enable,
+                UseServer = enable,
+                ReceiveTimeout = TimeSpan.FromSeconds(10),
+                CancelTimeout = TimeSpan.FromSeconds(10),
+                RtpTransport = RtpTransportProtocol.UDP
             });
-            NetworkManager.Connect(IPAddress.Parse("127.0.0.1"), 40000, 2, 5);
-            Console.WriteLine("Press enter to connect!");
+            do
+            {
+                try
+                {
+                    NetworkManager.Connect(IPAddress.Parse("127.0.0.1"), 40000, 2, 5);
+                    break;
+                }
+                catch (ConnectionException)
+                {
+                    do
+                    {
+                        Console.WriteLine("Cannot connect to server!\nDo you want to try to connect again?\n(y/n): ");
+                        var line = Console.ReadLine();
+                        bool BREAK = false;
+                        if (line != null)
+                        {
+                            line = line.ToLower();
+                            switch (line[0])
+                            {
+                                case 'y':
+                                    BREAK = true;
+                                    break;
+                                case 'n':
+                                    return;
+                            }
+                        }
+
+                        if (!BREAK) continue;
+                        BREAK = false;
+                        break;
+                    } while (true);
+                }
+            } while (true);
+            
+            Console.WriteLine("Press enter to join the meeting!");
             Console.ReadKey();
             string suffix = "live";
             var ipSes = NetworkManager.ConnMet(suffix);
             var serverUri = new Uri("rtsp://"+ipSes.Address+":"+ipSes.Port+"/"+suffix);
             var credentials = new NetworkCredential("admin", "123456");
-
             var cancellationTokenSource = new CancellationTokenSource();
-            var connectionParameters = new ConnectionParameters(serverUri, credentials)
+            NetworkManager.updateUri(serverUri);
+            var connectionParameters = NetworkManager.ConnectionParameters;/*new ConnectionParameters(serverUri, credentials)
             {
-                Enryption = !enable,
-                UseBase64 = enable,
+                Enryption = enable,
+                UseBase64 = !enable,
                 UseServer = enable,
                 RtpTransport = RtpTransportProtocol.UDP
-            };
+            };*/
             
             Task connectTask = ConnectAsync(connectionParameters, cancellationTokenSource.Token);
 
@@ -52,6 +91,7 @@ namespace TestNet5compability2
 
         private static async Task ConnectAsync(ConnectionParameters connectionParameters, CancellationToken token)
         {
+            //ulong c = 0;
             try
             {
                 if (connectionParameters.UseServer)
@@ -66,6 +106,8 @@ namespace TestNet5compability2
                     rtspClient.FrameReceived +=
                         (sender, frame) =>
                         {
+                            //if(frame.Type == FrameType.Video)
+                            //c += (ulong) frame.FrameSegment.Count;
                             Console.WriteLine(
                                 $"New frame {frame.Timestamp}: {frame.GetType().Name} - {frame.FrameSegment.Count}");
                         };

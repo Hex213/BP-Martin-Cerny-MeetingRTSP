@@ -99,6 +99,11 @@ namespace LibHexCryptoStandard.Algoritm
                     (plainBytes, 0, plainBytes.Length, encryptedBytes, iv.Length);
                 cipher.DoFinal(encryptedBytes, iv.Length + retLen);
 
+                Console.WriteLine("Encrypt:");
+                ByteArray.Print(key, "KEY");
+                ByteArray.Print(iv, "IV");
+                Console.WriteLine("End encryption");
+
                 return encryptedBytes;
             }
             catch (Exception ex)

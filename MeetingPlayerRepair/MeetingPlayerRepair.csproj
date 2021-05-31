@@ -17,7 +17,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <OutputPath>D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\RtspClientSharp\SimpleRtspPlayer\bin\</OutputPath>
+    <OutputPath>D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\Output\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <OutputPath>D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\Output\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

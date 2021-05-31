@@ -57,6 +57,7 @@ using CryptoPP::GCM_TablesOption;
 
 #include <string>
 #include "Global.h"
+#include "HexPacket.h"
 
 using namespace CryptoPP;
 using namespace std;
@@ -86,7 +87,7 @@ string converter(uint8_t* str) {
 /// <param name="outEncryptedBase64">Encrypted data</param>
 /// <param name="dataLength">Length of encrypted data</param>
 /// <returns>If is encryption success</returns>
-bool encrypt_aes256_gcm(const char* aesKey, const char* aesIV,
+bool encrypt_aes256_gcm(const char* aesKey, const CryptoPP::SecByteBlock& aesIV,
 	const char* inPlainText, size_t& size, char** outEncryptedBase64, int& dataLength)
 {
 	m_ErrorMessage.clear();
@@ -95,7 +96,7 @@ bool encrypt_aes256_gcm(const char* aesKey, const char* aesIV,
 	std::string outText;
 	std::string outBase64;
 
-	if (strlen(aesKey) > 31 && strlen(aesIV) > 15)
+	if (strlen(aesKey) > 31 && CryptoPP::BytePtrSize(aesIV) > 15)
 	{
 		try
 		{
@@ -103,7 +104,7 @@ bool encrypt_aes256_gcm(const char* aesKey, const char* aesIV,
 			
 			GCM< AES >::Encryption aesEncryption;
 			aesEncryption.SetKeyWithIV(reinterpret_cast<const CryptoPP::byte*>(aesKey),
-				AES::MAX_KEYLENGTH, reinterpret_cast<const CryptoPP::byte*>(aesIV), AES::BLOCKSIZE);
+				AES::MAX_KEYLENGTH, aesIV.BytePtr(),/*reinterpret_cast<const CryptoPP::byte*>(aesIV),*/ AES::BLOCKSIZE);
 			StringSource(data, size/*inPlainText*/, true, new AuthenticatedEncryptionFilter
 			(aesEncryption, new StringSink(outText)
 			) // AuthenticatedEncryptionFilter
@@ -134,9 +135,12 @@ bool encrypt_aes256_gcm(const char* aesKey, const char* aesIV,
 			{
 				dataLength = outText.length();
 				if (*outEncryptedBase64) free(*outEncryptedBase64);
-				*outEncryptedBase64 = static_cast<char*>(malloc(dataLength + 1));
-				memset(*outEncryptedBase64, '\0', dataLength + 1);
-				memcpy(*outEncryptedBase64, outText.c_str(), dataLength);
+				*outEncryptedBase64 = static_cast<char*>(malloc(dataLength + 16 + 1));
+				memset(*outEncryptedBase64, '\0', dataLength + 16 + 1);
+				memcpy(*outEncryptedBase64, aesIV, 16);
+				memcpy(*outEncryptedBase64+16, outText.c_str(), dataLength);
+
+				dataLength += 16;
 
 				bR = true;
 			}
@@ -149,6 +153,10 @@ bool encrypt_aes256_gcm(const char* aesKey, const char* aesIV,
 		catch (CryptoPP::Exception& e)
 		{
 			m_ErrorMessage.append(e.what());
+		}
+		catch(...)
+		{
+			m_ErrorMessage.append("Unknown error!");
 		}
 	}
 	else
@@ -163,7 +171,7 @@ bool encrypt_aes256_gcm(const char* aesKey, const char* aesIV,
 }
 
 //datalen input/output var
-bool decrypt_aes256_gcm(const char* aesKey, const char* aesIV,
+bool decrypt_aes256_gcm(const char* aesKey, const CryptoPP::SecByteBlock& aesIV,
 	const char* inBase64Text, char** outDecrypted, int& dataLength)
 {
 	m_ErrorMessage.clear();
@@ -177,14 +185,27 @@ bool decrypt_aes256_gcm(const char* aesKey, const char* aesIV,
 #else
 	pszDecodedText = std::string(inBase64Text, dataLength);
 #endif
-
-	if (strlen(aesKey) > 31 && strlen(aesIV) > 15)
+	if (strlen(aesKey) > 31 && /*strlen*/CryptoPP::BytePtrSize(aesIV) > 15)
 	{
+		//std::cout << "Decryption:\nKey=";
+		//for (int i = 0; i < 32; ++i)
+		//{
+		//	std::cout << +((unsigned char)aesKey[i]) << "-";
+		//}std::cout << "\nIV=";
+		//for (int i = 0; i < 16; ++i)
+		//{
+		//	std::cout << +((unsigned char)aesIV[i]) << "-";
+		//}std::cout << "Decryption end" << std::endl;
+		/*std::cout << "\nData=\n";
+		for (int i = 0; i < pszDecodedText.size(); ++i)
+		{
+			std::cout << +((unsigned char)pszDecodedText[i]) << "-";
+		}std::cout << std::endl;*/
 		try
 		{
 			GCM< AES >::Decryption aesDecryption;
 			aesDecryption.SetKeyWithIV(reinterpret_cast<const CryptoPP::byte*>(aesKey),
-				AES::MAX_KEYLENGTH, reinterpret_cast<const CryptoPP::byte*>(aesIV), AES::BLOCKSIZE);
+				AES::MAX_KEYLENGTH, /*reinterpret_cast<const CryptoPP::byte*>(aesIV)*/aesIV.BytePtr(), AES::BLOCKSIZE);
 			AuthenticatedDecryptionFilter df(aesDecryption, new StringSink(outText));
 
 			StringSource(pszDecodedText, true,
@@ -223,7 +244,7 @@ bool decrypt_aes256_gcm(const char* aesKey, const char* aesIV,
 	}
 	else
 	{
-		m_ErrorMessage.append("AES Key or IV cannot be empty");
+		m_ErrorMessage.append(("AES Key or IV cannot be empty, kl=" + strlen(aesKey)) + std::string(", ivl=" + CryptoPP::SecByteBlock(aesIV).size()));
 	}
 
 	return bR;

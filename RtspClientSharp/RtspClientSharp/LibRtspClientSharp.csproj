@@ -40,10 +40,12 @@ More info: https://github.com/BogdanovKirill/RtspClientSharp/issues/49</PackageR
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <DocumentationFile>bin\Release\netstandard2.0\RtspClientSharp.xml</DocumentationFile>
+    <OutputPath>D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\Output\</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Publish|x86'">
     <DocumentationFile>bin\Release\netstandard2.0\RtspClientSharp.xml</DocumentationFile>
+    <OutputPath>D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\Output\</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -52,6 +54,10 @@ More info: https://github.com/BogdanovKirill/RtspClientSharp/issues/49</PackageR
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Publish|x64'">
     <DocumentationFile>bin\Release\netstandard2.0\RtspClientSharp.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <OutputPath>D:\User\Desktop\Skola\Bakalarka\Projekt\moje\MeetingClient\Output\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

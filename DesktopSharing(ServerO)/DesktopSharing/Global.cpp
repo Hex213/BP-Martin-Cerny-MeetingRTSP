@@ -1,6 +1,7 @@
 #include "Global.h"
 #include <string>
 #include <limits>
+#include <osrng.h>
 
 #if ENCRYPT_PKT
 extern std::string key;
@@ -12,6 +13,14 @@ extern std::string m_ErrorMessage;
 NamedPipe pipe;
 HANDLE hPipe1, hPipe2;
 BOOL Finished;
+
+CryptoPP::SecByteBlock generateIV()
+{
+	CryptoPP::SecByteBlock iv(CryptoPP::AES::BLOCKSIZE);
+	CryptoPP::OS_GenerateRandomBlock(false, iv, iv.size());
+
+	return iv;
+}
 
 char* encrypt(const char* message, size_t& size)
 {
@@ -37,8 +46,9 @@ char* encrypt(const char* message, size_t& size)
 		pktDataLen = size;
 	}
 
+	auto iv = generateIV();
 	if (encrypt_aes256_gcm(key.c_str(),
-		iv.c_str(), pktData.c_str(), pktDataLen, &outEncryptedText, _size) == false)
+		iv, pktData.c_str(), pktDataLen, &outEncryptedText, _size) == false)
 	{
 		std::cout << "enrcypt err";
 	}
@@ -121,9 +131,16 @@ char* decrypt(char* data, size_t len, int& outSize)
 		m_ErrorMessage = "Cannot find start of packet";
 		return nullptr;
 	}
+
+	//std::cout << "\n\DECRYPT\n";
+	//for (int i = 0; i < len; ++i)
+	//{
+	//	std::cout << +((unsigned char)data[i]) << "-";
+	//}std::cout << std::endl;
 	
 	char nullBytes[5];
 	char sizebytes[5];
+	unsigned char _iv[16];
 
 	memset(nullBytes, 0, 5);
 	memset(sizebytes, 0, 5);
@@ -141,14 +158,21 @@ char* decrypt(char* data, size_t len, int& outSize)
 	}
 
 	char* dataToDecrypt = (char*)malloc(sizeUL);
-	memcpy(dataToDecrypt, data + 4 + 4, sizeUL);
+	memcpy(dataToDecrypt, data + 4 + 4 + 16, sizeUL);
+	
+	memcpy(_iv, data + 4 + 4, 16);
 
+	//std::cout << "IV1\n";
+	CryptoPP::SecByteBlock __iv = CryptoPP::SecByteBlock(_iv, CryptoPP::AES::BLOCKSIZE);
+	//std::cout << "IV2\n";
 	outSize = static_cast<int>(sizeUL);
+	outSize -= 16;
 	
 	char* decrypted = nullptr;
 	// pktData.c_str(), pktDataLen, & outEncryptedText, _size
-	decrypt_aes256_gcm(key.c_str(), iv.c_str(), dataToDecrypt, &decrypted, outSize);
-
+	//std::cout << "IV3\n";
+	decrypt_aes256_gcm(key.c_str(), __iv, dataToDecrypt, &decrypted, outSize);
+	//std::cout << "IV4\n";
 	free (dataToDecrypt);
 	return decrypted;
 #else

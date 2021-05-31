@@ -75,7 +75,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(ProjectDir)..\bin\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <OutDir>$(ProjectDir)..\..\Output\net5.0</OutDir>
     <IntDir>$(ProjectDir)..\objs\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -83,7 +83,7 @@
     <IntDir>$(ProjectDir)..\objs\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(ProjectDir)..\bin\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <OutDir>$(ProjectDir)..\..\Output\net5.0</OutDir>
     <IntDir>$(ProjectDir)..\objs\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

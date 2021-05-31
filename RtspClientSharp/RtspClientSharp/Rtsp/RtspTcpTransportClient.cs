@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using LibHexCryptoStandard.Packet;
 using LibHexCryptoStandard.Packet.AES;
+using LibHexUtils.Arrays;
 using LibNet.Utils;
 using LibRtspClientSharp.Hex;
 using RtspClientSharp.Utils;
@@ -63,10 +64,7 @@ namespace RtspClientSharp.Rtsp
         protected override Task WriteAsync(byte[] buffer, int offset, int count)
         {
             Debug.Assert(_networkStream != null, "_networkStream != null");
-            if (Global.strictPrint)
-            {
-                Console.WriteLine("Sending (" + count + ")");
-            }
+            
             //if(!Global.strictPrint)
             //{
             //    Console.WriteLine("SendClear(" + count + "):" + Encoding.UTF8.GetString(buffer, offset, count));
@@ -83,10 +81,24 @@ namespace RtspClientSharp.Rtsp
             {
                 byte[] bytes = new byte[count];
                 Buffer.BlockCopy(buffer, offset, bytes, 0, count);
-                var hexPacket = HexPacketAES.CreatePacketForEncrypt(bytes, ConnectionParameters.UseBase64, null);
-                var toSend = (byte[])hexPacket.Encrypt();
+                //var hexPacket = HexPacketAES.CreatePacketForEncrypt(bytes, ConnectionParameters.UseBase64, null);
+                //var toSend = (byte[])hexPacket.Encrypt();
+                var toSend = CipherManager.ProcessData(bytes, true, true);
+                if (buffer.Length < toSend.Length)
+                {
+                    var bufTmp = new byte[toSend.Length + offset];
+                    if(offset > 0) Buffer.BlockCopy(buffer, 0, bufTmp, 0, offset);
+                    buffer = bufTmp;
+                }
+
                 Buffer.BlockCopy(toSend, 0, buffer, offset, toSend.Length);
                 count = toSend.Length;
+            }
+
+            if (Global.strictPrint)
+            {
+                Console.WriteLine("Sending (" + count + ")");
+                ByteArray.Print(buffer, "Data", 0, count);
             }
 
             //if (!Global.onlyFrames)

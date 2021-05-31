@@ -51,7 +51,7 @@ namespace LibHexUtils.Arrays
                 }
                 s++;
             }
-            Console.Write("\b \n");
+            Console.Write("\b \b\n");
         }
 
         public static byte[] CopyBytes(int offset, params byte[][] args)

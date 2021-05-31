@@ -54,7 +54,8 @@ namespace LibHexCryptoStandard.Packet.AES
 
         public Object Encrypt()
         {
-            if (_dataBytes == null || _dataBytes.Length <= 0 || _type != EncryptType.Encrypt && _type != EncryptType.Encrypt_hpkt) throw new PacketException("Missing input data");
+            if (_dataBytes == null || _dataBytes.Length <= 0 || _type != EncryptType.Encrypt && _type != EncryptType.Encrypt_hpkt) 
+                throw new PacketException("Missing input data");
             
             byte[] block = _dataBytes;
             var data = AesGcm256.Encrypt(block, _key);
@@ -126,7 +127,8 @@ namespace LibHexCryptoStandard.Packet.AES
         public Object Decrypt(ushort offset = 0)
         {
             if (_dataBytes == null || _dataBytes.Length < 1 ||
-                (_type != EncryptType.Decrypt && _type != EncryptType.Decrypt_hpkt)) throw new PacketException("Missing input data");
+                (_type != EncryptType.Decrypt && _type != EncryptType.Decrypt_hpkt)) 
+                throw new PacketException("Missing input data");
             return ProcessDecrypt(offset);
         }
         #endregion

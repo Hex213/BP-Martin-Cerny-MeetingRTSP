@@ -61,7 +61,7 @@ namespace RtspClientSharp.Rtsp
                 BitConverter.GetBytes(ffport), Encoding.UTF8.GetBytes("-"), BitConverter.GetBytes(ssport),
                 Encoding.UTF8.GetBytes("\r\n"));
 
-            buff = CipherManager.ProcessData(buff, true, true);
+            //buff = CipherManager.ProcessData(buff, true, true);
 
             //ByteArray.Print(buff, "Ports");
             return WriteAsync(buff, 0, buff.Length);
@@ -253,10 +253,11 @@ namespace RtspClientSharp.Rtsp
 
                     byte[] toDecrypt = new byte[totalRead];
                     Buffer.BlockCopy(_buffer, 0, toDecrypt, 0, totalRead);
-                    HexPacketAES hexPacketAes = HexPacketAES.CreatePacketForDecrypt(toDecrypt, true, null);//new HexPacketAES(toDecrypt, ConnectionParameters.UseBase64, EncryptType.Decrypt_hpkt));
-                    byte[] decrypted = null;
+                    var decrypted = CipherManager.ProcessData(toDecrypt, false, true);
+                    //HexPacketAES hexPacketAes = HexPacketAES.CreatePacketForDecrypt(toDecrypt, true, null);//new HexPacketAES(toDecrypt, ConnectionParameters.UseBase64, EncryptType.Decrypt_hpkt));
+                    //byte[] decrypted = null;
                     //decrypted
-                    decrypted = (byte[])hexPacketAes.Decrypt();
+                    //decrypted = (byte[])hexPacketAes.Decrypt();
                     //clear default buffer
                     Array.Clear(_buffer, 0, totalRead);
                     //Copy back to buffer

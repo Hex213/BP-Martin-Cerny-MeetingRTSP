@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using LibHexUtils.Arrays;
 using LibNet.Base;
 using LibNet.Utils;
 
@@ -49,7 +50,24 @@ namespace LibNet.UDP
             messageSent = false;
             byte[] sendBytes = bytes;
 
-            var sended = client.Send(sendBytes, sendBytes.Length);
+            int sended = -1;
+
+            try
+            {
+                sended = client.Send(sendBytes, sendBytes.Length);
+                if (sended == bytes.Length) messageSent = true;
+                do
+                {
+                    var tS = ByteArray.SubArray(sendBytes, sended);
+                    sended += client.Send(tS, tS.Length);
+                    if (sended >= bytes.Length) messageSent = true;
+                } while (!messageSent);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
             PrintNet.printSend(client.Client, sended);
         }
 

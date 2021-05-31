@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using Org.BouncyCastle.Math;
 using RtspClientSharp.MediaParsers;
 
 namespace RtspClientSharp.Rtp
@@ -34,16 +36,22 @@ namespace RtspClientSharp.Rtp
             }
         }
 
+        private Dictionary<int, int> data = new Dictionary<int, int>();
+
         public void Process(ArraySegment<byte> payloadSegment)
         {
             if (!RtpPacket.TryParse(payloadSegment, out RtpPacket rtpPacket))
+            {
+                Console.WriteLine("Not a rtpPacket");
                 return;
-
+            }
             if (_rtpSequenceAssembler != null)
                 _rtpSequenceAssembler.ProcessPacket(ref rtpPacket);
             else
                 ProcessImmediately(ref rtpPacket);
         }
+
+        private BigInteger countt = new BigInteger("000000000000000000000000000000000000");
 
         private void ProcessImmediately(ref RtpPacket rtpPacket)
         {
@@ -84,11 +92,18 @@ namespace RtspClientSharp.Rtp
             _previousTimestamp = rtpPacket.Timestamp;
 
             if (rtpPacket.PayloadSegment.Count == 0)
+            {
+                Console.WriteLine("Payload == 0");
                 return;
+            }
+                
 
             TimeSpan timeOffset = _samplesFrequency != 0
                 ? new TimeSpan((long) (_samplesSum * 1000 / (uint) _samplesFrequency * TimeSpan.TicksPerMillisecond))
                 : TimeSpan.MinValue;
+
+            //countt = countt.Add(new BigInteger(rtpPacket.PayloadSegment.Count.ToString()));
+            //Console.WriteLine("Type: " + rtpPacket.PayloadType + ": " + timeOffset + " - Seq: " + rtpPacket.SeqNumber + " ::" + _isFirstPacket);
 
             _mediaPayloadParser.Parse(timeOffset, rtpPacket.PayloadSegment, rtpPacket.MarkerBit);
         }

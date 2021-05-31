@@ -43,6 +43,8 @@ MediaSession::~MediaSession()
 	}
 }
 
+std::map<uint8_t, uint8_t> data_map;
+
 bool MediaSession::AddSource(MediaChannelId channelId, MediaSource* source)
 {
 	//source->set... zaciatok load
@@ -67,6 +69,30 @@ bool MediaSession::AddSource(MediaChannelId channelId, MediaSource* source)
 							tmpPkt.last = pkt.last;
 							tmpPkt.timestamp = pkt.timestamp;
 							tmpPkt.type = pkt.type;
+#if _DEBUG
+							uint8_t key = tmpPkt.type;
+							/*if (data_map.contains(key))
+							{
+								if (data_map[key] < 5)
+								{
+									std::cout << "\nType: " << +key << " , Data size: " << tmpPkt.size << std::endl;
+									data_map[key] = data_map[key] + 1;
+									for (int i = 0; i < 5; i++)
+									{
+										std::cout << +(tmpPkt.data.get()[tmpPkt.size - i]) << "-";
+									}std::cout << std::endl;
+								}
+							}
+							else
+							{
+								data_map.insert_or_assign((unsigned char)key, (unsigned char)0);
+								std::cout << "\nType: " << +key << " , Data size: " << tmpPkt.size << std::endl;
+								for (int i = 0; i < 5; i++)
+								{
+									std::cout << +(tmpPkt.data.get()[tmpPkt.size - i]) << "-";
+								}std::cout << std::endl;
+							}*/
+#endif
 							packets.emplace(id, tmpPkt);//pridanie paket data do list
 						}
 						clients.emplace_front(conn);

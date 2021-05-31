@@ -16,6 +16,8 @@
 #include "media.h"
 #include "Parser.h"
 
+#include "Global.h"
+
 using namespace std;
 using namespace xop;
 
@@ -84,10 +86,11 @@ bool RtspRequest::ParseRequest(BufferReader *buffer)
 		return true;
 	}
 
+#if USE_PROXY
 	auto f = buffer->Peek();
 	auto first = buffer->FindFirstCrlf();
 	std::string s = std::string(f, first - f);
-	
+
 	if(s.find("HCPORT") != std::string::npos && oneSet)
 	{
 		auto remsize = s.length();
@@ -132,8 +135,10 @@ bool RtspRequest::ParseRequest(BufferReader *buffer)
 		pipe.Write(portsReq, size);
 		oneSet = false;
 	}
+#endif
+	
     bool ret = true;
-	while(1) {
+	while(true) {
 		if(state_ == kParseRequestLine) {
 			const char* firstCrlf = buffer->FindFirstCrlf();
 			if(firstCrlf != nullptr)
@@ -214,7 +219,9 @@ bool RtspRequest::ParseRequestLine(const char* begin, const char* end)
 		return true; 
 	}
 
+#if USE_PROXY
 	ChangeAddress(url, 512);
+#endif
 
 	string method_str(method);
 	if(method_str == "OPTIONS") {
@@ -378,6 +385,7 @@ bool RtspRequest::ParseTransport(std::string& message)
 				{
 					return false;
 				}
+#if USE_PROXY
 				if (!fi)
 				{
 					rtp_port = clientRTP_t0;
@@ -390,6 +398,7 @@ bool RtspRequest::ParseTransport(std::string& message)
 					rtcpPort = clientRTCP_t1;
 				}
 				std::cout << "New Client Ports: " << rtp_port << "-" << rtcpPort << std::endl;
+#endif	
 			}
 			else if((message.find("multicast", pos)) != std::string::npos) {
 				transport_ = RTP_OVER_MULTICAST;
@@ -631,10 +640,8 @@ int RtspRequest::BuildSetupUdpRes(const char* buf, int buf_size, uint16_t rtp_ch
 	
 	//if(_DEBUG) std::cout << "PORTY PRE SERVER: " << rtp_chn << " - " << serverRTP_t0 << std::endl << rtcp_chn << " - " << serverRTCP_t0 << std::endl;
 	int rtp, rtcp;
-
-	//rtp = this->GetRtpPort();
-	//rtcp = this->GetRtcpPort();
 	
+#if USE_PROXY
 	if (!track1)
 	{
 		rtp_chn = serverRTP_t0;
@@ -654,6 +661,10 @@ int RtspRequest::BuildSetupUdpRes(const char* buf, int buf_size, uint16_t rtp_ch
 		"\nrtcp_ch: " << rtcp_chn <<
 		"\nrtp_client: " << rtp <<
 		"\nrtcp_client: " << rtcp << std::endl;
+#else
+	rtp = this->GetRtpPort();
+	rtcp = this->GetRtcpPort();
+#endif
 	snprintf((char*)ptr, buf_size,
 			"RTSP/1.0 200 OK\r\n"
 			"CSeq: %u\r\n"
