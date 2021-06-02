@@ -8,7 +8,28 @@
       d:DesignHeight="450" d:DesignWidth="800"
       Title="Create_1">
 
-    <Grid>
-        
-    </Grid>
+	<Grid>
+		<Button x:Name="save" Content="Uložiť" HorizontalAlignment="Left" Margin="15,0,0,15" VerticalAlignment="Bottom" Width="163" Height="26" Click="save_Click"/>
+		<Button x:Name="run" Content="Spustiť" HorizontalAlignment="Right" Margin="0,0,15,15" VerticalAlignment="Bottom" Width="163" Height="26" Click="run_Click" IsEnabled="False"/>
+		<Button x:Name="save_run" Content="Uložiť a spustiť" HorizontalAlignment="Center" Margin="0,0,0,15" VerticalAlignment="Bottom" Width="164" Height="26" Click="save_run_Click"/>
+		<Grid x:Name="Info" HorizontalAlignment="Left" Height="394" Margin="424,10,0,0" VerticalAlignment="Top" Width="366">
+			<Label x:Name="LabelID" Content="ID:" HorizontalAlignment="Center" Margin="117,12,211,0" VerticalAlignment="Top"/>
+			<Label x:Name="LabelIDStatus" Content="Not set" HorizontalAlignment="Center" Margin="172,12,132,0" VerticalAlignment="Top" Width="62"/>
+			<Label x:Name="LabelPass" Content="Pass:" HorizontalAlignment="Center" Margin="113,41,214,0" VerticalAlignment="Top" Width="39"/>
+			<Label x:Name="LabelPassStatus" Content="Not set" HorizontalAlignment="Center" Margin="172,41,143,0" VerticalAlignment="Top" RenderTransformOrigin="0.283,0.382" Width="51"/>
+		</Grid>
+		<Grid x:Name="Sett" HorizontalAlignment="Left" Height="394" Margin="10,10,0,0" VerticalAlignment="Top" Width="414">
+			<Label x:Name="idLabel" Content="Zadajte ID schôdzky (nefunkčné)" HorizontalAlignment="Center" Margin="0,10,0,0" VerticalAlignment="Top" Width="279" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+			<PasswordBox x:Name="pass" HorizontalAlignment="Center" Margin="68,105,67,0" VerticalAlignment="Top" Width="279" PasswordChar="●" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+			<Label x:Name="passLabel" Content="Zadajte heslo pre schôdzku" HorizontalAlignment="Center" Margin="68,74,67,0" VerticalAlignment="Top" Width="279" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+			<TextBox x:Name="id" HorizontalAlignment="Left" Height="23" Margin="68,51,0,0" TextWrapping="Wrap" Text="live" VerticalAlignment="Top" Width="279" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsEnabled="False"/>
+			<CheckBox x:Name="encryption" Content="Šifrovanie" HorizontalAlignment="Center" Margin="0,128,0,0" VerticalAlignment="Top" Width="121" IsChecked="True" Padding="3,-1,0,0" Checked="encryption_Checked" Click="encryption_Click"/>
+			<Grid HorizontalAlignment="Left" Height="47" Margin="68,148,0,0" VerticalAlignment="Top" Width="279">
+				<RadioButton x:Name="udpButton" Content="UDP" HorizontalAlignment="Left" Margin="15,22,0,0" VerticalAlignment="Top" Checked="udpButton_Checked" IsChecked="True"/>
+				<RadioButton x:Name="tcpButton" Content="TCP" HorizontalAlignment="Right" Margin="0,22,15,0" VerticalAlignment="Top" Checked="tcpButton_Checked"/>
+				<Label Content="Preferovať protokol:" HorizontalAlignment="Center" Margin="0,-3,0,0" VerticalAlignment="Top"/>
+			</Grid>
+		</Grid>
+
+	</Grid>
 </Page>

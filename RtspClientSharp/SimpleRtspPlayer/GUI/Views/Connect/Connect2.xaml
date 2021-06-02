@@ -30,16 +30,16 @@
 			</Rectangle.Fill>
 		</Rectangle>
 		<Label x:Name="LabelConnect" Content="Joint the meeting" HorizontalAlignment="Center" VerticalAlignment="Top" Height="63" Width="462" RenderTransformOrigin="0.476,0.496" FontFamily="Microsoft Sans Serif" FontSize="45" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Margin="57.8,8.6,57.8,0" Grid.Column="1" Grid.Row="1"/>
-		<Button x:Name="ButtonConfirm" Content="Confirm" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.281,0.207" Width="204" Height="30" Margin="200.8,9.179,0,0" FontFamily="Microsoft Sans Serif" FontSize="20" Style="{StaticResource RoundSelected}" Grid.Column="1" Grid.Row="5" Click="ButtonConfirm_Click"/>
+		<Button x:Name="ButtonConfirm" Content="Potvrdiť" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.281,0.207" Width="204" Height="30" Margin="200.8,9.179,0,0" FontFamily="Microsoft Sans Serif" FontSize="20" Style="{StaticResource RoundSelected}" Grid.Column="1" Grid.Row="5" Click="ButtonConfirm_Click"/>
 		<Label x:Name="LabelHintId" Content="Select or type the ip server." HorizontalAlignment="Left" Margin="206.8,64.6,0,0" VerticalAlignment="Top" FontSize="15" FontFamily="Microsoft Sans Serif" VerticalContentAlignment="Top" HorizontalContentAlignment="Left" Grid.Column="1" Grid.Row="1"/>
 		<Grid Grid.Row="2" Grid.ColumnSpan="3" Margin="35,0.2,36.6,22.2" Grid.RowSpan="2">
-			<ListView ItemsSource="{Binding SourceCollection}" Margin="80,0,80,0" VerticalAlignment="Stretch" HorizontalAlignment="Center">
+			<ListView x:Name="iptable" ItemsSource="{Binding SourceCollection}" Margin="80,0,80,0" VerticalAlignment="Stretch" HorizontalAlignment="Center">
 				<ListView.View>
 					<GridView>
-						<GridViewColumn Width="100" Header="IPuri Address" DisplayMemberBinding="{Binding IPAddress}" />
+						<GridViewColumn Width="100" Header="IP Address" DisplayMemberBinding="{Binding IPAddress}" />
 						<GridViewColumn Width="100" Header="Official server" DisplayMemberBinding="{Binding OfficialServer}" />
 						<GridViewColumn Width="100" Header="Connection status" DisplayMemberBinding="{Binding ConnStatus}" />
-						<GridViewColumn Width="60" Header="Ping" DisplayMemberBinding="{Binding ConnStatus}" />
+						<GridViewColumn Width="60" Header="Ping" DisplayMemberBinding="{Binding Ping}" />
 						<GridViewColumn Width="45" Header="Action">
 							<GridViewColumn.CellTemplate>
 								<DataTemplate>
@@ -49,6 +49,11 @@
 						</GridViewColumn>
 					</GridView>
 				</ListView.View>
+				<ListView.ItemContainerStyle>
+					<Style TargetType="ListViewItem">
+						<EventSetter Event="PreviewMouseLeftButtonDown" Handler="iptable_PreviewMouseLeftButtonDown" />
+					</Style>
+				</ListView.ItemContainerStyle>
 			</ListView>
 		</Grid>
 		<Grid Grid.Column="1" Grid.Row="4">

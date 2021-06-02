@@ -93,7 +93,7 @@ void TcpConnection::HandleRead()
 		//}std::cout << std::endl;
 #endif
 #if ENCRYPT_PKT
-		Sleep(1000);
+		//Sleep(1000);
 		size_t r = ret;
 		int out_size = 0, off = 0;
 		auto pkts = read_buffer_->ParsePakets(const_cast<char*>(read_buffer_->BeginWrite() - r), r);

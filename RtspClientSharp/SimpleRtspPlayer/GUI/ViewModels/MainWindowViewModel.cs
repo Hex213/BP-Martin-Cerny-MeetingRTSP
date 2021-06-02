@@ -4,6 +4,7 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using GalaSoft.MvvmLight.Command;
+using LibRtspClientSharp.Hex;
 using RtspClientSharp;
 using SimpleRtspPlayer.GUI.Models;
 using SimpleRtspPlayer.Hex.Connect;
@@ -45,7 +46,7 @@ namespace SimpleRtspPlayer.GUI.ViewModels
 
         public void StartPlayer()
         {
-            _mainWindowModel.Start(HexNetworkConnect.GetConnectionParameters(_onceStart));
+            _mainWindowModel.Start(/*HexNetworkConnect.GetConnectionParameters(_onceStart)*/NetworkManager.ConnectionParameters);
             _mainWindowModel.StatusChanged += MainWindowModelOnStatusChanged;
 
             _onceStart = true;

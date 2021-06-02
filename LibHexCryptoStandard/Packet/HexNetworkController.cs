@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using LibHexCryptoStandard.Packet.AES;
@@ -10,6 +11,14 @@ namespace LibHexCryptoStandard.Packet
 {
     public static class HexNetworkController
     {
+        private static byte[] key;
+
+        public static void setKey(byte[] key)
+        {
+            if(key.Length == 32)
+                HexNetworkController.key = key;
+        }
+
         public static async Task<int> decrypt(byte[] readBuffer, int read, int offset, bool decryptData, bool useBase64, bool output = false)
         {
             if (output) Console.WriteLine("Recv(" + read + ")");
@@ -20,10 +29,10 @@ namespace LibHexCryptoStandard.Packet
             {
                 return read;
             }
-
-            //todo: nastava chyba
+            
+            
             //1. get packet
-            hexPacketAes = HexPacketAES.CreatePacketForDecrypt(readBuffer, true, null, (ushort)offset, useBase64);
+            hexPacketAes = HexPacketAES.CreatePacketForDecrypt(readBuffer, true, key, (ushort)offset, useBase64);
             //2. decrypt
             Object decrypted = hexPacketAes.Decrypt();
             byte[] toCopy = (byte[])decrypted;

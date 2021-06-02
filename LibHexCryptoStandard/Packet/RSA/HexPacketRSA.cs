@@ -53,7 +53,7 @@ namespace LibHexCryptoStandard.Packet.RSA
         /// <param name="encryptKey">Key used for encryption</param>
         /// <param name="offset">Start offset of data</param>
         /// <returns>Encrypted message (OAEP)</returns>
-        public byte[] Encrypt(RsaKeyParameters encryptKey, bool isInPacket = true, int offset = 0)
+        public byte[] Encrypt(RsaKeyParameters encryptKey, bool toHpkt = true, int offset = 0)
         {
             if (encryptKey is null)
             {
@@ -65,7 +65,7 @@ namespace LibHexCryptoStandard.Packet.RSA
                 throw new TypeInitializationException("HexPacketRSA", new Exception("Not initialized"));
             }
             
-            return isInPacket ? HexPacket.Pack(RsaOAEP.Encrypt(encryptKey, data, offset)) : RsaOAEP.Encrypt(encryptKey, data, offset);
+            return toHpkt ? HexPacket.Pack(RsaOAEP.Encrypt(encryptKey, data, offset)) : RsaOAEP.Encrypt(encryptKey, data, offset);
         }
         #endregion
 

@@ -21,6 +21,8 @@ void NamedPipe::Init(std::string name, bool waitForConnect)
 
 	Finished = FALSE;
 
+	int count = 0;
+	
 	std::cout << "Create pipe in...";// << lpszPipename1 << " write\n";
 	do
 	{
@@ -30,9 +32,15 @@ void NamedPipe::Init(std::string name, bool waitForConnect)
 			lpszPipename1 = const_cast<LPSTR>(param.c_str());
 			printf("Could not open the pipe  - (error %d)\n", GetLastError());
 			Sleep(1000);
+			count++;
+		}
+		if(count > 10)
+		{
+			exit(1);
 		}
 	}
 	while (waitForConnect == true && (hPipe1 == NULL || hPipe1 == INVALID_HANDLE_VALUE));
+	count = 0;
 	std::cout << "OK\nCreate pipe out...";
 	do
 	{
@@ -42,6 +50,11 @@ void NamedPipe::Init(std::string name, bool waitForConnect)
 			lpszPipename2 = const_cast<LPSTR>(param.c_str());
 			printf("Could not open the pipe  - (error %d)\n", GetLastError());
 			Sleep(1000);
+			count++;
+		}
+		if (count > 10)
+		{
+			exit(1);
 		}
 	}
 	while (waitForConnect == true && (hPipe2 == NULL || hPipe2 == INVALID_HANDLE_VALUE));

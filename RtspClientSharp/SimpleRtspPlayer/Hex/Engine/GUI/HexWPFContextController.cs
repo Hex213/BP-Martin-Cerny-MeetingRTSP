@@ -100,7 +100,7 @@ namespace SimpleRtspPlayer.Hex.Engine.GUI
 
         public static void StartPlayer()
         {
-            if (!HexNetworkConnect.Check()) return;
+            //if (!HexNetworkConnect.Check()) return;
             //_mainWindowModel.Start(HexNetworkConnect.GetConnectionParameters());
             _mainPlayerWindow.StartPlayer();
         }

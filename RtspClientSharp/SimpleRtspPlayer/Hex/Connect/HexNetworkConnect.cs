@@ -39,6 +39,7 @@ namespace SimpleRtspPlayer.Hex.Connect
 
         public static string Id => _id;
         public static IPAddress IpAddr => _ipAddr;
+        public static int Port => _port;
         public static string Name => _networkCredential.UserName;
 
         public static bool AddName(string name)

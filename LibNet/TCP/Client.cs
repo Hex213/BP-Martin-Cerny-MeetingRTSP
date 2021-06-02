@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using LibNet.Base;
+using LibNet.Meeting.Packets.HexPacket;
+using LibNet.Meeting.Parsers;
 using LibNet.UDP;
 using LibNet.Utils;
 
@@ -18,13 +20,69 @@ namespace LibNet.TCP
         private ClientTCP client;
         private NetworkStream stream;
 
+        public byte[] GetIP()
+        {
+            return ((IPEndPoint) client.Handler.Client.LocalEndPoint).Address.GetAddressBytes();
+        }
+
+        public byte[] GetPort()
+        {
+            return BitConverter.GetBytes(((IPEndPoint)client.Handler.Client.LocalEndPoint).Port);
+        }
+
+        private Action<int, TcpClient, object> recvAction;
+
         public Socket GetSocket()
         {
             return client?.Handler?.Client;
         }
 
+        public void ResetBuffer()
+        {
+            client.TcpState.buffer = new byte[client.TcpState.BufferSize];
+            client.TcpState.totalRead = 0;
+        }
+
         public Client()
         {
+        }
+
+        public void HostRecvFunc(Action<int, TcpClient, object> recv)
+        {
+            recvAction = recv;
+        }
+
+        private void Receive(TcpClient tcp)
+        {
+            client = new ClientTCP(tcp, new TCPState());
+            stream = tcp.GetStream();
+            
+            while (true)
+            {
+                client.TcpState.totalRead = 0;
+                var state = (TCPState)Receive();
+
+                var type = Parser.ParseCH(state.Buffer, state.TotalRead, out var obj);
+                recvAction(type, tcp, obj);
+            }
+        }
+
+        public void RunListener(int port)
+        {
+            if (port <= 0) throw new ArgumentOutOfRangeException(nameof(port));
+
+            _ip = IPAddress.Any;
+            _port = port;
+
+            Socket listener = new Socket(_ip.AddressFamily,
+                SocketType.Stream, ProtocolType.Tcp);
+
+            listener.Bind(new IPEndPoint(_ip, _port));
+            listener.Listen(100);
+            var t = new TcpClient();
+            t.Client = listener;
+            client = new ClientTCP(t, new TCPState());
+            client.RunListener(Receive);
         }
 
         public override void Connect(IPAddress ip, int port)
@@ -62,11 +120,18 @@ namespace LibNet.TCP
             return o;
         }
 
+        public object Receive(bool fromStart)
+        {
+            if (fromStart) client.TcpState.totalRead = 0;
+            return Receive();
+        }
+
         public override object Receive()
         {
             var s = client.TcpState;
 
             var read = stream.Read(s.buffer, s.totalRead, s.bufferSize - s.totalRead);
+            s.totalRead = read;
             PrintNet.printRead(client.Handler.Client, read);
 
             return s;

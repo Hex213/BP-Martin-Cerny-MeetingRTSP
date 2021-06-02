@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using LibNet.TCP;
 
 namespace LibNet.Utils
 {
@@ -16,6 +17,49 @@ namespace LibNet.Utils
         {
             this.handler = handler;
             this._tcpState = tcpState;
+        }
+
+        private ManualResetEvent allDone = new ManualResetEvent(false);
+        private Action<TcpClient> action;
+
+        //private bool connected = false;
+        public void RunListener(Action<TcpClient> act)
+        {
+            Console.WriteLine("Waiting for a connection...");
+            action = act;
+            while (true)
+            {
+                // Set the event to nonsignaled state.  
+                allDone.Reset();
+
+                // Start an asynchronous socket to listen for connections.  
+                handler.Client.BeginAccept(
+                    new AsyncCallback(AcceptCallback),
+                    handler.Client);
+
+                // Wait until a connection is made before continuing.  
+                allDone.WaitOne();
+                //if (connected) break;
+            }
+        }
+
+        private void AcceptCallback(IAsyncResult ar)
+        {
+            // Signal the main thread to continue.  
+            allDone.Set();
+
+            Socket listener = (Socket)ar.AsyncState;
+            Socket handler = listener.EndAccept(ar);
+            Console.WriteLine("New client: " + handler.RemoteEndPoint);
+            var t = new TcpClient();
+            t.Client = handler;
+
+            action(t);
+
+            // Create the state object. 
+            //_tcpState.setSocket(handler);
+            //handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
+            //    new AsyncCallback(ReadCallback), state);
         }
 
         public TcpClient Handler => handler;

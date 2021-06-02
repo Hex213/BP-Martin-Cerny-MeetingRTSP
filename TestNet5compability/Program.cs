@@ -29,7 +29,7 @@ namespace TestNet5compability
                 NetworkManager.InitConParams(new ConnectionParameters(new Uri("rtsp://127.0.0.1:1/"))
                 {
                     Enryption = true,
-                    UseServer = true,
+                    UseServer = false,
                     UseBase64 = false,
                     RtpTransport = RtpTransportProtocol.UDP
                 });
@@ -37,7 +37,8 @@ namespace TestNet5compability
                 {
                     try
                     {
-                        NetworkManager.Connect(IPAddress.Parse("127.0.0.1"), 40000, 2, 5);
+                        if(NetworkManager.ConnectionParameters.UseServer)
+                            NetworkManager.ConnectBase(IPAddress.Parse("127.0.0.1"), 40000, 2, 5);
                         break;
                     }
                     catch (ConnectionException)
@@ -66,7 +67,7 @@ namespace TestNet5compability
                         } while (true);
                     }
                 } while (true);
-                NetworkManager.HostMet(true, "live", "test");
+                NetworkManager.HostMet("live", "test");
             }
             catch (Exception e)
             {
@@ -77,7 +78,7 @@ namespace TestNet5compability
             Console.ReadKey();
             //try
             //{
-            //    NetworkManager.Connect(IPAddress.Parse("127.0.0.1"), 9999, 2, 5);
+            //    NetworkManager.ConnectBase(IPAddress.Parse("127.0.0.1"), 9999, 2, 5);
             //}
             //catch (Exception a)
             //{

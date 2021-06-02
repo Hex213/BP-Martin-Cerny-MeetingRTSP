@@ -81,7 +81,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\Output\</OutputPath>
+    <OutputPath>..\..\Output\net5.0\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
@@ -173,6 +173,9 @@
     <Compile Include="GUI\Views\Create\Create_1.xaml.cs">
       <DependentUpon>Create_1.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GUI\Views\Create\Create_2.xaml.cs">
+      <DependentUpon>Create_2.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GUI\Views\Main\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -236,6 +239,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="GUI\Views\Create\Create_2.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="GUI\Views\Main\MainPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -295,6 +302,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\LibHexCryptoStandard\LibHexCryptoStandard.csproj">
+      <Project>{9fbf883f-31c2-4f35-9038-95d52708494f}</Project>
+      <Name>LibHexCryptoStandard</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\LibUIAcademyFramework\LibUIAcademyFramework.csproj">
       <Project>{969c37d6-030d-4d63-82b7-2ef7077bfca0}</Project>
       <Name>LibUIAcademyFramework</Name>

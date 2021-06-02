@@ -59,7 +59,12 @@ namespace LibHexUtils.Arrays
             if (args == null) throw new ArgumentNullException(nameof(args));
             if (args.Length == 0) throw new ArgumentException("Value cannot be an empty collection.", nameof(args));
 
-            var size = args.Sum(t => ((byte[]) t).Length);
+            int size = 0;
+            foreach (var arr in args)
+            {
+                var len = arr?.Length;
+                size += len ?? default(int);
+            }//= args.Sum(t => ((byte[]) t).Length);
             if (size <= 0)
             {
                 throw new ArgumentException("Count of params arrays <= 0");
@@ -69,7 +74,8 @@ namespace LibHexUtils.Arrays
             var index = offset;
             foreach (var o in args)
             {
-                if (((byte[]) o).Length <= 0) continue;
+                if(o == null) continue;
+                if (((byte[]) o).Length == 0) continue;
                 Buffer.BlockCopy((byte[])o, 0, outBytes, index, ((byte[]) o).Length);
                 index += ((byte[]) o).Length;
             }

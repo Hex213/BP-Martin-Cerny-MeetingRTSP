@@ -5,6 +5,7 @@ using System.Security;
 using System.Text;
 using LibHexCryptoStandard.Algoritm;
 using LibHexCryptoStandard.Hashs;
+using LibHexCryptoStandard.Packet;
 using LibHexCryptoStandard.Packet.AES;
 using LibHexCryptoStandard.Packet.RSA;
 using LibHexUtils.Arrays;
@@ -24,9 +25,21 @@ namespace LibRtspClientSharp.Hex
         private static byte[] AesKeyAdmin = null;
         private static byte[] AesKeyData = null;
 
+        public static RsaKeyParameters vkDes;
+
         private static bool CanGet = false;
 
         public static byte[] HashId => hashID;
+
+        public static string GetID()
+        {
+            return Convert.ToBase64String(hashID);
+        }
+
+        public static void RegisterVK(byte[] vk)
+        {
+            vkDes = RsaOAEP.BytesTokey(vk, false);
+        }
 
         public static void NewID()
         {
@@ -37,6 +50,11 @@ namespace LibRtspClientSharp.Hex
             
             hashID = SHA.SHA3(toHash, 256);
             Console.WriteLine("ID: " + System.Convert.ToBase64String(hashID));
+        }
+
+        public static void Test()
+        {
+            CanGet = true;
         }
 
         public static byte[] GetDataKey()
@@ -119,6 +137,11 @@ namespace LibRtspClientSharp.Hex
             return EncodeRSA(sessionRsaKeyPair.Public, data, encrypt, inHPkt);
         }
 
+        public static byte[] ProcessByVkRsaKey(byte[] data, bool encrypt, bool inHpkt)
+        {
+            return EncodeRSA(vkDes, data, encrypt, inHpkt);
+        }
+
         public static bool ParseHostConf(byte[] hpkt)
         {
             try
@@ -157,6 +180,7 @@ namespace LibRtspClientSharp.Hex
             if (key.Length != 32) throw new ArgumentException("Key length is not correct!");
 
             AesKeyData = key;
+            HexNetworkController.setKey(AesKeyData);
         }
 
         public static void InitEncryption(string key)
@@ -177,6 +201,8 @@ namespace LibRtspClientSharp.Hex
             Buffer.BlockCopy(rkey, 0, toKey, 0, rkey.Length);
             Buffer.BlockCopy(hkey, 0, toKey, rkey.Length, hkey.Length);
             AesKeyData = SHA.SHA3(toKey, bitLen);
+
+            HexNetworkController.setKey(AesKeyData);
 
             CanGet = true;
         }

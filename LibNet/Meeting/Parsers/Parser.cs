@@ -14,7 +14,7 @@ namespace LibNet.Meeting.Parsers
     {
         public static readonly int keyLen = 32;
 
-        private static int Parse(byte[] hpkt, byte[]pattern, bool isPacket = true)
+        public static int Parse(byte[] hpkt, byte[]pattern, bool isPacket = true)
         {
             if (hpkt == null) throw new ArgumentNullException(nameof(hpkt));
 
@@ -24,9 +24,9 @@ namespace LibNet.Meeting.Parsers
             return start;
         }
 
-        public static bool ParseCon(byte[] hpkt)
+        public static bool ParseCon(byte[] hpkt, bool inHpkt = true)
         {
-            return Parse(hpkt, Encoding.UTF8.GetBytes("HMET HI")) != -1;
+            return Parse(hpkt, Encoding.UTF8.GetBytes("HMET HI"), inHpkt) != -1;
         }
 
         public static bool ParseConn(byte[] hpkt, out byte[] id, out byte[] port)
@@ -243,19 +243,19 @@ namespace LibNet.Meeting.Parsers
             return Parse(hpkt, Encoding.UTF8.GetBytes("HMET KEY OK")) != -1;
         }
 
-        public static bool ParseKey(byte[] hpkt, out byte[] key, string arg = "HMET KEY ")
+        public static bool ParseKey(byte[] hpkt, out byte[] key, string arg = "HMET KEY ", bool inHpkt = true)
         {
             int start = -1;
             key = null;
 
-            if ((start = Parse(hpkt, Encoding.UTF8.GetBytes(arg))) != -1)
+            if ((start = Parse(hpkt, Encoding.UTF8.GetBytes(arg), inHpkt)) != -1)
             {
                 if ((hpkt.Length - start) <= (1 + 1 + 32))
                 {
                     return false;
                 }
 
-                var unpkt = HexPacket.Unpack(hpkt, 0);
+                var unpkt = inHpkt ? HexPacket.Unpack(hpkt, 0) : hpkt;
                 key = new byte[unpkt.Length - arg.Length];
                 Buffer.BlockCopy(unpkt, arg.Length, key, 0, key.Length);
                 return true;
@@ -363,6 +363,38 @@ namespace LibNet.Meeting.Parsers
             rtpPortT1 = BitConverter.ToInt32(rtpSubt1, 0);
             rtcpPortT1 = BitConverter.ToInt32(rtcpSubt1, 0);
             return true;
+        }
+
+        private static bool ParseConnDir(byte[] buff, out byte[] id)
+        {
+            return ParseID(buff, out id, "HMET CONN ", false);
+        }
+
+        public static int ParseCH(byte[] buff, int read, out object obj, bool inHpkt = true)
+        {
+            int type = 0;
+            obj = null;
+
+            if (buff == null) return type;
+
+            if (ParseCon(buff, inHpkt))
+            {
+                type = 1;
+            } else if (ParseKey(buff, out var key, "HMET KEY ", inHpkt))
+            {
+                obj = key;
+                type = 2;
+            } else if (ParseConnDir(buff, out var id))
+            {
+                type = 3;
+                obj = id;
+            } else if (read > 200 && read < 300)
+            {
+                obj = buff;
+                type = 4;
+            }
+
+            return type;
         }
     }
 }

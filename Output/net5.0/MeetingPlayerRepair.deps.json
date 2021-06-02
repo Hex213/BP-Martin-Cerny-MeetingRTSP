@@ -59,6 +59,7 @@
       },
       "SimpleRtspPlayer/1.0.0": {
         "dependencies": {
+          "LibHexCryptoStandard": "1.0.0",
           "LibRtspClientSharp": "1.3.3",
           "LibUIAcademyFramework": "1.0.0"
         },

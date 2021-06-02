@@ -71,7 +71,7 @@ namespace LibNet.Meeting.Packets.HexPacket
                 throw new PacketException("Bad size of packet!");
             }
 
-            if (size > (Hpckt.Length - c.GetSizeSize - c.GetNullSize - start))
+            if (Hpckt.Length < (size - start))
             {
                 throw new PacketException("Packet size is larger than data!");
             }

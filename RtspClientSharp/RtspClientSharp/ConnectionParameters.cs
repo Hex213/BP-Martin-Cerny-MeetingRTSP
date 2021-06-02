@@ -35,6 +35,11 @@ namespace RtspClientSharp
         public bool UseBase64 { get; set; } = false;
         //pouzi proxy server
         public bool UseServer { get; set; } = false;
+        //ID
+        public byte[] ID { get; set; } = null;
+        //Suffix
+        public string Suffix { get; set; } = "";
+
 
         public ConnectionParameters(Uri connectionUri)
         {

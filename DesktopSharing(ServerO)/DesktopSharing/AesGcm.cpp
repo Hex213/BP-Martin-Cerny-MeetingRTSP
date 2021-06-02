@@ -244,7 +244,9 @@ bool decrypt_aes256_gcm(const char* aesKey, const CryptoPP::SecByteBlock& aesIV,
 	}
 	else
 	{
-		m_ErrorMessage.append(("AES Key or IV cannot be empty, kl=" + strlen(aesKey)) + std::string(", ivl=" + CryptoPP::SecByteBlock(aesIV).size()));
+		m_ErrorMessage.append("AES Key or IV cannot be empty");
+		m_ErrorMessage.append(" - IV:");
+		m_ErrorMessage.append(std::to_string(CryptoPP::BytePtrSize(aesIV)));
 	}
 
 	return bR;

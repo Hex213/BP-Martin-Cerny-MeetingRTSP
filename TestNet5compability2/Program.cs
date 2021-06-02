@@ -16,14 +16,14 @@ namespace TestNet5compability2
 
         static void Main(string[] args)
         {
-            Thread.Sleep(5000);
+            Thread.Sleep(2000);
             Console.WriteLine("-----CLIENT connect-----");
             CipherManager.NewID();
             NetworkManager.InitConParams(new ConnectionParameters(new Uri("rtsp://127.0.0.1:1/"))
             {
                 Enryption = enable,
                 UseBase64 = !enable,
-                UseServer = enable,
+                UseServer = !enable,
                 ReceiveTimeout = TimeSpan.FromSeconds(10),
                 CancelTimeout = TimeSpan.FromSeconds(10),
                 RtpTransport = RtpTransportProtocol.UDP
@@ -32,7 +32,8 @@ namespace TestNet5compability2
             {
                 try
                 {
-                    NetworkManager.Connect(IPAddress.Parse("127.0.0.1"), 40000, 2, 5);
+                   // Console.ReadKey();
+                    NetworkManager.ConnectBase(IPAddress.Parse("127.0.0.1"), 40000, 2, 5);
                     break;
                 }
                 catch (ConnectionException)
@@ -67,7 +68,7 @@ namespace TestNet5compability2
             string suffix = "live";
             var ipSes = NetworkManager.ConnMet(suffix);
             var serverUri = new Uri("rtsp://"+ipSes.Address+":"+ipSes.Port+"/"+suffix);
-            var credentials = new NetworkCredential("admin", "123456");
+            //var credentials = new NetworkCredential("admin", "123456");
             var cancellationTokenSource = new CancellationTokenSource();
             NetworkManager.updateUri(serverUri);
             var connectionParameters = NetworkManager.ConnectionParameters;/*new ConnectionParameters(serverUri, credentials)
