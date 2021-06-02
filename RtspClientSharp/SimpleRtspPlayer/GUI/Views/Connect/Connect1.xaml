@@ -24,14 +24,14 @@
 			           Width="50"
 			           Height="50" Margin="122,223,478,111" MouseDown="BackImageRect_MouseDown">
 			<Rectangle.Fill>
-				<ImageBrush x:Name="BackImage" ImageSource="/Resources/CreateImg.png" />
+				<ImageBrush x:Name="BackImage" ImageSource="/Resources/arrLeft.jpg" />
 			</Rectangle.Fill>
 		</Rectangle>
 		<Rectangle x:Name="NextImageRect" RadiusX="25" RadiusY="25"
 			           Width="50"
 			           Height="50" Margin="478,223,122,111">
 			<Rectangle.Fill>
-				<ImageBrush x:Name="NextImage" ImageSource="/Resources/ConnectImg.png" />
+				<ImageBrush x:Name="NextImage" ImageSource="/Resources/arrRight.jpg" />
 			</Rectangle.Fill>
 		</Rectangle>
 		<Rectangle HorizontalAlignment="Center" Height="1" Stroke="Black" VerticalAlignment="Center" Width="1" RadiusX="39.307" RadiusY="39.307" ScrollViewer.VerticalScrollBarVisibility="Hidden">
