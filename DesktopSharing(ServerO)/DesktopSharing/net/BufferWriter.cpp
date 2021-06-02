@@ -4,6 +4,9 @@
 #include "BufferWriter.h"
 #include "Socket.h"
 #include "SocketUtil.h"
+#include "Global.h"
+
+#include <fstream>
 
 using namespace xop;
 
@@ -51,11 +54,12 @@ void xop::WriteUint16LE(char* p, uint16_t value)
 
 BufferWriter::BufferWriter(int capacity) 
 	: max_queue_length_(capacity)
-	, buffer_(new std::queue<Packet>)
+	, buffer_(new std::queue<Packet>), bufferEncryp_(new std::queue<HexPacket>)
 {
 	
 }	
 
+//tcp stream control
 bool BufferWriter::Append(std::shared_ptr<char> data, uint32_t size, uint32_t index)
 {
 	if (size <= index) {
@@ -67,10 +71,20 @@ bool BufferWriter::Append(std::shared_ptr<char> data, uint32_t size, uint32_t in
 	}
      
 	Packet pkt = {data, size, index};
+#if ENCRYPT_PKT
+	HexPacket hpkt(data, size, index, Packet_type::Encrypt);
+	if(hpkt.EncryptPacket())
+	{
+		bufferEncryp_->emplace(std::move(hpkt));
+	}
+#endif
+
 	buffer_->emplace(std::move(pkt));
+	
 	return true;
 }
 
+//TCP data
 bool BufferWriter::Append(const char* data, uint32_t size, uint32_t index)
 {
 	if (size <= index) {
@@ -86,12 +100,33 @@ bool BufferWriter::Append(const char* data, uint32_t size, uint32_t index)
 	memcpy(pkt.data.get(), data, size);
 	pkt.size = size;
 	pkt.writeIndex = index;
+
+#if ENCRYPT_PKT
+	HexPacket hpkt(pkt.data, size, index, Packet_type::Encrypt);
+	if (hpkt.EncryptPacket())
+	{
+		bufferEncryp_->emplace(std::move(hpkt));
+	}
+	else
+	{
+		return false;
+	}
+#endif
+
 	buffer_->emplace(std::move(pkt));
+	
 	return true;
 }
 
+#include "Global.h"
+#include "AesGcm.h"
+
+std::string getKey(void);
+std::string getIV(void);
+
+//send tcp data
 int BufferWriter::Send(SOCKET sockfd, int timeout)
-{		
+{
 	if (timeout > 0) {
 		SocketUtil::SetBlock(sockfd, timeout); 
 	}
@@ -104,16 +139,54 @@ int BufferWriter::Send(SOCKET sockfd, int timeout)
 		if (buffer_->empty()) {
 			return 0;
 		}
-		
+#if ENCRYPT_PKT
+		if (bufferEncryp_->empty()) {
+			return 0;
+		}
+		HexPacket& hpkt = bufferEncryp_->front();
+#endif
+
 		count -= 1;
-		Packet &pkt = buffer_->front();
+		Packet& pkt = buffer_->front();
+		
+		
+#if ENCRYPT_PKT == 0
+		//Send data
+#if NETWORK_OUTPUT
+		std::cout << "Send(" << (pkt.size - pkt.writeIndex) << "): " << pkt.data.get() << std::endl;
+#endif
 		ret = ::send(sockfd, pkt.data.get() + pkt.writeIndex, pkt.size - pkt.writeIndex, 0);
+#else
+		size_t send_data_bytes = 0;
+		auto* send_data = hpkt.GetDataToSend(send_data_bytes);
+#if NETWORK_OUTPUT
+		std::cout << "Send(" << (send_data_bytes - hpkt.get_offset()) << ")/("<<pkt.size<<"): " << (ENCRYPT_USEBASE64 == 1 ? send_data+4+4 : "(only base64 show data)") << std::endl;
+#endif
+		ret = ::send(sockfd, send_data, send_data_bytes, 0);
+		delete[] send_data;
+#endif
+
+		//compute if is connection live
 		if (ret > 0) {
+			//check if is sended all things
 			pkt.writeIndex += ret;
+#if ENCRYPT_PKT
+			if(ret <= 8)
+			{
+				throw std::exception("Network error!");
+			}
+			hpkt.set_offset(hpkt.get_offset() + ret - 4 - sizeof(uint32_t));
+			if (hpkt.get_size() == hpkt.get_offset()) {
+				count += 1;
+				buffer_->pop();
+				bufferEncryp_->pop();
+			}
+#else
 			if (pkt.size == pkt.writeIndex) {
 				count += 1;
 				buffer_->pop();
 			}
+#endif
 		}
 		else if (ret < 0) {
 #if defined(__linux) || defined(__linux__)

@@ -5,7 +5,11 @@
 #include "RtspServer.h"
 #include "MediaSession.h"
 #include "MediaSource.h"
+#include "NamedPipe.h"
+#include "Parser.h"
 #include "net/SocketUtil.h"
+
+#include "Global.h"
 
 #define USER_AGENT "-_-"
 #define RTSP_DEBUG 1
@@ -13,6 +17,9 @@
 
 using namespace xop;
 using namespace std;
+
+extern NamedPipe pipe;
+extern bool firstSetup;
 
 RtspConnection::RtspConnection(std::shared_ptr<Rtsp> rtsp, TaskScheduler *task_scheduler, SOCKET sockfd)
 	: TcpConnection(task_scheduler, sockfd)
@@ -108,7 +115,6 @@ bool RtspConnection::HandleRtspRequest(BufferReader& buffer)
 		std::cout << str << std::endl;
 	}
 #endif
-
     if (rtsp_request_->ParseRequest(&buffer)) {
 		RtspRequest::Method method = rtsp_request_->GetMethod();
 		if(method == RtspRequest::RTCP) {
@@ -216,7 +222,13 @@ void RtspConnection::HandleRtcp(BufferReader& buffer)
 void RtspConnection::HandleRtcp(SOCKET sockfd)
 {
     char buf[1024] = {0};
-    if(recv(sockfd, buf, 1024, 0) > 0) {
+	int r = recv(sockfd, buf, 1024, 0);
+    if(r > 0) {
+		char buf[INET_ADDRSTRLEN] = "";
+		struct sockaddr_in name;
+		socklen_t len = sizeof(name);
+		inet_ntop(AF_INET, &name.sin_addr, buf, sizeof buf);
+		std::cout << "\nRead (" << buf << ") (" << r << ")\n";
         KeepAlive();
     }
 }
@@ -337,6 +349,26 @@ void RtspConnection::HandleCmdSetup()
 
 			uint16_t serRtpPort = rtp_conn_->GetRtpPort(channel_id);
 			uint16_t serRtcpPort = rtp_conn_->GetRtcpPort(channel_id);
+
+#if USE_PROXY
+			std::cout << "\nServer_Ports: rtp=" << serRtpPort << ", rtcp=" << serRtcpPort << std::endl;
+
+			char prefix[] = "PSP=";
+			char buff[12];
+			memcpy_s(buff, 12, prefix, 4);
+			auto srtpb = Parser::GetBytesFromInt(serRtpPort);
+			auto srtcpb = Parser::GetBytesFromInt(serRtcpPort);
+			memcpy_s(buff + 4, 8, srtpb, 4);
+			memcpy_s(buff + 4 + 4, 4, srtcpb, 4);
+			delete[] srtpb;
+			delete[] srtcpb;
+			pipe.Write(buff, 12);
+			std::cout << "Waiting for confirmation...";
+			pipe.WaitForConfirm();
+			std::cout << "OK" << std::endl;
+			firstSetup = !firstSetup;
+#endif
+			
 			size = rtsp_request_->BuildSetupUdpRes(res.get(), 4096, serRtpPort, serRtcpPort, session_id);
 		}
 		else {          

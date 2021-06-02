@@ -4,7 +4,7 @@ using System.ComponentModel.Design;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace LibUIAcademy.XanderUI
+namespace LibUIAcademyFramework.XanderUI
 {
     public class FormDropShadow : Component
     {

@@ -14,6 +14,8 @@ namespace RtspClientSharp.Rtsp
 
         Stream GetStream();
 
+        Task SendPorts();
+
         Task<RtspResponseMessage> EnsureExecuteRequest(RtspRequestMessage requestMessage, CancellationToken token,
             int responseReadPortionSize = 0);
 

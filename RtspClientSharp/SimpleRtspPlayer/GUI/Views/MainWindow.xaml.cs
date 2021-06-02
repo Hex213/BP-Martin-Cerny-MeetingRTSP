@@ -5,6 +5,8 @@ using System.Runtime.InteropServices;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
+using LibRtspClientSharp.Hex;
+using RtspClientSharp;
 using SimpleRtspPlayer.GUI.Views.Connect;
 using SimpleRtspPlayer.GUI.Views.Create;
 using SimpleRtspPlayer.GUI.Views.Main;
@@ -25,16 +27,13 @@ namespace SimpleRtspPlayer.GUI.Views
         private Connect1 _pageConnect = null;
         private Create_1 _pageCreate = null;
 
-        
-
-        
-
-        
-
         public MainWindow()
         {
             InitializeComponent();
             HexWpfContextController.Init(this);
+
+            CipherManager.NewID();
+
             HexWpfContextController.ShowPage(new MainPage());
         }
 
@@ -80,6 +79,18 @@ namespace SimpleRtspPlayer.GUI.Views
                 HexWpfContextController.ShowPage(_pageConnect ??= new Connect1());
             }
             _clear();
+        }
+
+        private bool privilegExit = false;
+        
+        private void MainWindowLayout_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+
+            if (!privilegExit)
+            {
+                privilegExit = true;
+                Environment.Exit(1);
+            }
         }
     }
 }

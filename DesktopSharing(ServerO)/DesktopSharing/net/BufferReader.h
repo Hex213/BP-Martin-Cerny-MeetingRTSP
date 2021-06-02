@@ -10,6 +10,7 @@
 #include <algorithm>  
 #include <memory>  
 #include "Socket.h"
+#include <deque>
 
 namespace xop
 {
@@ -23,7 +24,14 @@ uint16_t ReadUint16LE(char* data);
     
 class BufferReader
 {
-public:	
+public:
+	struct Packet
+	{
+		int size;
+		char* data;
+	};
+	std::deque<Packet> ParsePakets(char* data, size_t& len);
+	
 	static const uint32_t kInitialSize = 2048;
 	BufferReader(uint32_t initialSize = kInitialSize);
 	virtual ~BufferReader();
@@ -33,7 +41,7 @@ public:
 
 	uint32_t WritableBytes() const
 	{  return (uint32_t)(buffer_->size() - writer_index_); }
-
+	
 	char* Peek() 
 	{ return Begin() + reader_index_; }
 
@@ -54,6 +62,12 @@ public:
 		char crlfCrlf[] = "\r\n\r\n";
 		const char* crlf = std::find_end(Peek(), BeginWrite(), crlfCrlf, crlfCrlf + 4);
 		return crlf == BeginWrite() ? nullptr : crlf;
+	}
+
+	void UpdateIndex(size_t size)
+	{
+		writer_index_ += size;
+		reader_index_ += size;
 	}
 
 	void RetrieveAll()  { 
@@ -77,25 +91,29 @@ public:
 	void RetrieveUntil(const char* end)
 	{ Retrieve(end - Peek()); }
 
-	int Read(SOCKET sockfd);
+	int Read(SOCKET sockfd, int& offset);
 	uint32_t ReadAll(std::string& data);
 	uint32_t ReadUntilCrlf(std::string& data);
 
 	uint32_t Size() const 
 	{ return (uint32_t)buffer_->size(); }
 
-private:
-	char* Begin()
-	{ return &*buffer_->begin(); }
-
-	const char* Begin() const
-	{ return &*buffer_->begin(); }
-
+	//povodne private
 	char* beginWrite()
 	{ return Begin() + writer_index_; }
 
 	const char* BeginWrite() const
 	{ return Begin() + writer_index_; }
+
+	
+private:
+	static std::deque<char*> pkts;
+	
+	char* Begin()
+	{ return &*buffer_->begin(); }
+
+	const char* Begin() const
+	{ return &*buffer_->begin(); }
 
 	std::shared_ptr<std::vector<char>> buffer_;
 	size_t reader_index_ = 0;

@@ -1,0 +1,106 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v5.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v5.0": {
+      "HexServer/1.0.0": {
+        "dependencies": {
+          "LibHexCryptoStandard": "1.0.0",
+          "LibNet": "1.0.0",
+          "SimpleBase": "3.0.2"
+        },
+        "runtime": {
+          "HexServer.dll": {}
+        }
+      },
+      "Portable.BouncyCastle/1.8.10": {
+        "runtime": {
+          "lib/netstandard2.0/BouncyCastle.Crypto.dll": {
+            "assemblyVersion": "1.8.10.0",
+            "fileVersion": "1.8.10.1"
+          }
+        }
+      },
+      "SimpleBase/3.0.2": {
+        "dependencies": {
+          "System.Memory": "4.5.4"
+        },
+        "runtime": {
+          "lib/netstandard2.1/SimpleBase.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "System.Memory/4.5.4": {},
+      "LibHexCryptoStandard/1.0.0": {
+        "dependencies": {
+          "LibNet": "1.0.0",
+          "Portable.BouncyCastle": "1.8.10"
+        },
+        "runtime": {
+          "LibHexCryptoStandard.dll": {}
+        }
+      },
+      "LibHexUtils/1.0.0": {
+        "runtime": {
+          "LibHexUtils.dll": {}
+        }
+      },
+      "LibNet/1.0.0": {
+        "dependencies": {
+          "LibHexUtils": "1.0.0"
+        },
+        "runtime": {
+          "LibNet.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "HexServer/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Portable.BouncyCastle/1.8.10": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-XLhjNAwuVB9ynwn11l5K44eyozh8q6gFseTrlnLNttejimglX7+F9+vxh60LPjvA/DAt6fUdS43N3ah8K6eaWg==",
+      "path": "portable.bouncycastle/1.8.10",
+      "hashPath": "portable.bouncycastle.1.8.10.nupkg.sha512"
+    },
+    "SimpleBase/3.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-5K+pTcNfFlre/xn///PwPbU/Cnwc+tyaJo7vuXG6yC00Qno99cwy7UibQqSamq5GcU+WjvFppNaC274wfY6eSw==",
+      "path": "simplebase/3.0.2",
+      "hashPath": "simplebase.3.0.2.nupkg.sha512"
+    },
+    "System.Memory/4.5.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-1MbJTHS1lZ4bS4FmsJjnuGJOu88ZzTT2rLvrhW7Ygic+pC0NWA+3hgAen0HRdsocuQXCkUTdFn9yHJJhsijDXw==",
+      "path": "system.memory/4.5.4",
+      "hashPath": "system.memory.4.5.4.nupkg.sha512"
+    },
+    "LibHexCryptoStandard/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "LibHexUtils/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "LibNet/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "LibHexCryptoStandardTests1": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

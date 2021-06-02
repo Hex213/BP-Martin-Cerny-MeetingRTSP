@@ -4,6 +4,8 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using LibRtspClientSharp.Hex;
+using RtspClientSharp;
 using SimpleRtspPlayer.Hex.Connect;
 using SimpleRtspPlayer.Hex.Engine.GUI;
 using SimpleRtspPlayer.Hex.Globals;
@@ -79,6 +81,10 @@ namespace SimpleRtspPlayer.GUI.Views.Connect
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            NetworkManager.InitConParams(new ConnectionParameters(new Uri("rtsp://1.1.1.1:1/")) {
+                Suffix = TextID.Text
+            });
+
             _next();
         }
         

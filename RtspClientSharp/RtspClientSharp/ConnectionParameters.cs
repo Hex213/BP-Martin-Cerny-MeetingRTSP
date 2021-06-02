@@ -28,6 +28,19 @@ namespace RtspClientSharp
         public string UserAgent { get; set; } = DefaultUserAgent;
         public RtpTransportProtocol RtpTransport { get; set; } = RtpTransportProtocol.TCP;
 
+        //Pridane
+        //Spustit desifrovanie/sifrovanie
+        public bool Enryption { get; set; } = false;
+        //Pouzit Base64 desifrovanie/sifrovanie
+        public bool UseBase64 { get; set; } = false;
+        //pouzi proxy server
+        public bool UseServer { get; set; } = false;
+        //ID
+        public byte[] ID { get; set; } = null;
+        //Suffix
+        public string Suffix { get; set; } = "";
+
+
         public ConnectionParameters(Uri connectionUri)
         {
             ValidateUri(connectionUri);

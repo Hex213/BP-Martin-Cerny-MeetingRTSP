@@ -119,6 +119,7 @@ namespace MeetingPlayerRepair
             }
 
             tryRunX86(ovrride);
+            Console.WriteLine("Missing SDL2?");
         }
     }
 }

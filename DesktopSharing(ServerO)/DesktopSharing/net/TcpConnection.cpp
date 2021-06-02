@@ -32,6 +32,7 @@ TcpConnection::~TcpConnection()
 	}
 }
 
+//unused
 void TcpConnection::Send(std::shared_ptr<char> data, uint32_t size)
 {
 	if (!is_closed_) {
@@ -43,9 +44,9 @@ void TcpConnection::Send(std::shared_ptr<char> data, uint32_t size)
 	}
 }
 
+//send data
 void TcpConnection::Send(const char *data, uint32_t size)
 {
-	//TODO: or here encrypt
 	if (!is_closed_) {
 		mutex_.lock();
 		write_buffer_->Append(data, size);
@@ -64,20 +65,83 @@ void TcpConnection::Disconnect()
 	});
 }
 
+#include "Global.h"
+
 void TcpConnection::HandleRead()
 {
 	{
 		std::lock_guard<std::mutex> lock(mutex_);
-
+		int offset = -1;
+		
 		if (is_closed_) {
+			std::cout << "CLOSED!!!!";
 			return;
 		}
+
 		
-		int ret = read_buffer_->Read(channel_->GetSocket());
+		int ret = read_buffer_->Read(channel_->GetSocket(), offset);
 		if (ret <= 0) {
 			this->Close();
 			return;
 		}
+
+#if NETWORK_OUTPUT
+		std::cout << "Recv(" << ret << ")" << std::endl;
+		//for (int i = 0; i < ret; i++)
+		//{
+		//	std::cout << +((unsigned char)(read_buffer_->beginWrite() - ret)[i]) << "-";
+		//}std::cout << std::endl;
+#endif
+#if ENCRYPT_PKT
+		//Sleep(1000);
+		size_t r = ret;
+		int out_size = 0, off = 0;
+		auto pkts = read_buffer_->ParsePakets(const_cast<char*>(read_buffer_->BeginWrite() - r), r);
+		while(!pkts.empty())
+		{
+			auto pkt = pkts.front();
+			pkts.pop_front();
+			//std::cout << "\nDecrypting packet: " << static_cast<void*>(pkt.data) << ", size = " << pkt.size << " ";
+			auto* output = decrypt(pkt.data, pkt.size, out_size);
+			if (output == nullptr || out_size == 0)
+			{
+				std::cout << "Decryption failed - " << GetLastCryptoError();
+				break;
+			}
+			else
+			{
+				auto *p = read_buffer_->Peek();
+				std::cout << "PEEK=" << static_cast<void*>(p) << ", off=" << off << "\n";
+				std::cout << "\nBEGIN\n" << std::string(output, out_size) << "\nEND\n";
+				memcpy(p + off, output, out_size);
+				off += out_size;
+				free(output);
+			}
+
+			free(pkt.data);
+		}
+
+		ret = off;
+		pkts.clear();
+		/*int out_size = 0, tmp = 0, rtmp = ret;
+		while(out_size < ret)
+		{
+			auto output = decrypt(read_buffer_->beginWrite() - rtmp + out_size, rtmp - out_size, tmp);
+			if (output == nullptr || tmp == 0)
+			{
+				std::cout << "Decryption failed - " << GetLastCryptoError();
+				break;
+			}
+			else
+			{
+				memcpy(read_buffer_->Peek(), output, tmp);
+				out_size += tmp;
+				free(output);
+			}
+		}*/
+#else
+		
+#endif
 	}
 
 	if (read_cb_) {

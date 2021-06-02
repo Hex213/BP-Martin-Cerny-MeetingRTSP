@@ -49,7 +49,7 @@ namespace RtspClientSharp.Rtsp
 
             string request = ComposeGetRequest();
             byte[] requestBytes = Encoding.ASCII.GetBytes(request);
-
+            //todo: sendng-http
             await _dataNetworkStream.WriteAsync(requestBytes, 0, requestBytes.Length, token);
 
             var buffer = new byte[Constants.MaxResponseHeadersSize];
@@ -147,7 +147,7 @@ namespace RtspClientSharp.Rtsp
         protected override Task ReadExactAsync(byte[] buffer, int offset, int count)
         {
             Debug.Assert(_dataNetworkStream != null, "_dataNetworkStream != null");
-            return _dataNetworkStream.ReadExactAsync(buffer, offset, count);
+            return _dataNetworkStream.ReadExactAsync(buffer, offset, count, ConnectionParameters.Enryption, ConnectionParameters.UseBase64);
         }
 
         private string ComposeGetRequest()

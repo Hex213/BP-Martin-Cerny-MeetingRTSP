@@ -2,6 +2,8 @@
 // 2018-9-30
 
 #include "RtpConnection.h"
+
+#include "Global.h"
 #include "RtspConnection.h"
 #include "net/SocketUtil.h"
 
@@ -38,6 +40,29 @@ RtpConnection::~RtpConnection()
 	}
 }
 
+void SendPorts(unsigned int rtp, unsigned int rtcp)
+{
+	char ToSend[11];
+	ToSend[0] = 'S', ToSend[1] = 'P', ToSend[10] = '\0';
+	unsigned char bytes[4];
+	bytes[0] = (rtp >> 24) & 0xFF;
+	bytes[1] = (rtp >> 16) & 0xFF;
+	bytes[2] = (rtp >> 8) & 0xFF;
+	bytes[3] = rtp & 0xFF;
+	memcpy_s(ToSend + 2, 8, bytes, 4);
+	bytes[0] = (rtcp >> 24) & 0xFF;
+	bytes[1] = (rtcp >> 16) & 0xFF;
+	bytes[2] = (rtcp >> 8) & 0xFF;
+	bytes[3] = rtcp & 0xFF;
+	memcpy_s(ToSend + 6, 4, bytes, 4);
+	std::cout << "::" << rtp << ":" << rtcp << std::endl;
+	for (int i = 0; i < 11; i++)
+	{
+		std::cout << +ToSend[i] << "-";
+	}std::cout << std::endl;
+	pipe.Write(ToSend, 10);
+}
+
 int RtpConnection::GetId() const
 {
 	auto conn = rtsp_connection_.lock();
@@ -55,6 +80,8 @@ bool RtpConnection::SetupRtpOverTcp(MediaChannelId channel_id, uint16_t rtp_chan
 		return false;
 	}
 
+	//SendPorts(rtp_channel, rtcp_channel);
+
 	media_channel_info_[channel_id].rtp_channel = rtp_channel;
 	media_channel_info_[channel_id].rtcp_channel = rtcp_channel;
 	rtpfd_[channel_id] = conn->GetSocket();
@@ -64,6 +91,8 @@ bool RtpConnection::SetupRtpOverTcp(MediaChannelId channel_id, uint16_t rtp_chan
 
 	return true;
 }
+
+bool allowNext = false;
 
 bool RtpConnection::SetupRtpOverUdp(MediaChannelId channel_id, uint16_t rtp_port, uint16_t rtcp_port)
 {
@@ -75,9 +104,10 @@ bool RtpConnection::SetupRtpOverUdp(MediaChannelId channel_id, uint16_t rtp_port
 	if(SocketUtil::GetPeerAddr(conn->GetSocket(), &peer_addr_) < 0) {
 		return false;
 	}
-
+	
 	media_channel_info_[channel_id].rtp_port = rtp_port;
 	media_channel_info_[channel_id].rtcp_port = rtcp_port;
+
 
 	std::random_device rd;
 	for (int n = 0; n <= 10; n++) {
@@ -229,8 +259,13 @@ void RtpConnection::SetRtpHeader(MediaChannelId channel_id, RtpPacket pkt)
 	}
 }
 
+#if ENCRYPT_PKT
+extern std::string key;
+extern std::string iv;
+#endif
+
 int RtpConnection::SendRtpPacket(MediaChannelId channel_id, RtpPacket pkt)
-{    //TODO: add crypto (two func down)
+{
 	if (is_closed_) {
 		return -1;
 	}
@@ -259,6 +294,8 @@ int RtpConnection::SendRtpPacket(MediaChannelId channel_id, RtpPacket pkt)
 	return ret ? 0 : -1;
 }
 
+//#include "Global.h"
+
 int RtpConnection::SendRtpOverTcp(MediaChannelId channel_id, RtpPacket pkt)
 {
 	auto conn = rtsp_connection_.lock();
@@ -273,23 +310,50 @@ int RtpConnection::SendRtpOverTcp(MediaChannelId channel_id, RtpPacket pkt)
 	rtpPktPtr[2] = (char)(((pkt.size-4)&0xFF00)>>8);
 	rtpPktPtr[3] = (char)((pkt.size -4)&0xFF);
 
+#if NETWORK_OUTPUT
+	std::cout << "SendTCP("<< pkt.size << ")" << std::endl;
+#endif
+	
 	conn->Send((char*)rtpPktPtr, pkt.size);
 	return pkt.size;
 }
-
+int i = 0;
 int RtpConnection::SendRtpOverUdp(MediaChannelId channel_id, RtpPacket pkt)
 {
 	//media_channel_info_[channel_id].octetCount  += pktSize;
 	//media_channel_info_[channel_id].packetCount += 1;
+	int ret = -1;
+	
+	//Encryption for data(udp)
+#if ENCRYPT_PKT
+	HexPacket* hpkt = new HexPacket(reinterpret_cast<char*>(pkt.data.get() + 4), pkt.size - 4, 0, Packet_type::Encrypt);
+	hpkt->EncryptPacket();
+	size_t send_data_bytes = 0;
+	const auto* send_data = hpkt->GetDataToSend(send_data_bytes);
 
-	int ret = sendto(rtpfd_[channel_id], (const char*)pkt.data.get()+4, pkt.size-4, 0, 
+#if NETWORK_OUTPUT
+	std::cout << "SendUDP(" << send_data_bytes << ")/clear(" << pkt.size - 4 << ")" << std::endl;
+#endif
+	ret = sendto(rtpfd_[channel_id], send_data, send_data_bytes, 0,
+		(struct sockaddr*)&(peer_rtp_addr_[channel_id]),
+		sizeof(struct sockaddr_in));
+	
+	delete[] send_data;
+	free(hpkt);
+#else
+#if NETWORK_OUTPUT
+	if(i < 10) std::cout << "SendUDP(" << pkt.size - 4 << ")" << std::endl;
+	i++;
+#endif
+	ret = sendto(rtpfd_[channel_id], (const char*)pkt.data.get()+4, pkt.size-4, 0, 
 					(struct sockaddr *)&(peer_rtp_addr_[channel_id]),
 					sizeof(struct sockaddr_in));
-                   
+#endif
+
 	if(ret < 0) {        
 		Teardown();
 		return -1;
 	}
-
+	
 	return ret;
 }

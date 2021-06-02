@@ -7,6 +7,20 @@
       Title="Connect_Wait" Width="650" Height="384" MinWidth="650" MinHeight="384">
 
 	<Grid>
+		<Grid HorizontalAlignment="Center" Height="47" Margin="185,52,185.6,0" VerticalAlignment="Top" Width="279">
+			<RadioButton x:Name="udpButton" Content="UDP" HorizontalAlignment="Left" Margin="15,22,0,0" VerticalAlignment="Top" Checked="udpButton_Checked" IsChecked="True"/>
+			<RadioButton x:Name="tcpButton" Content="TCP" HorizontalAlignment="Right" Margin="0,22,15,0" VerticalAlignment="Top" Checked="tcpButton_Checked"/>
+			<Label Content="Používať protokol:" HorizontalAlignment="Center" Margin="0,-3,0,0" VerticalAlignment="Top"/>
+		</Grid>
+		<Grid HorizontalAlignment="Center" Height="47" Margin="185,120,185.6,0" VerticalAlignment="Top" Width="279">
+			<RadioButton x:Name="EncrYesButton" Content="Áno" HorizontalAlignment="Left" Margin="15,22,0,0" VerticalAlignment="Top" IsChecked="True" Checked="EncrYesButton_Checked"/>
+			<RadioButton x:Name="EncrNoButton" Content="Nie" HorizontalAlignment="Right" Margin="0,22,15,0" VerticalAlignment="Top" Checked="EncrNoButton_Checked"/>
+			<Label Content="Pouívať šifrovanie(Manuálne):" HorizontalAlignment="Center" Margin="0,-3,0,0" VerticalAlignment="Top"/>
+		</Grid>
+		<Label Content="Toto nastavenie závisí od založenej schôdzky(Nie je prispôsobené na automatický výber)" HorizontalAlignment="Center" Margin="87,167,87.6,0" VerticalAlignment="Top"/>
+		<Button x:Name="Connect" Content="Pripojiť" HorizontalAlignment="Left" Margin="259,198,0,0" VerticalAlignment="Top" Width="136" Height="27" Click="Connect_Click"/>
+		<Label x:Name="LabelStatus" Content="Status: Wait" HorizontalAlignment="Center" Margin="0,225,-0.4,0" VerticalAlignment="Top" HorizontalContentAlignment="Center" Width="650"/>
+		<Label x:Name="LabelID" Content="ID" HorizontalAlignment="Center" Margin="0,10,0,0" VerticalAlignment="Top"/>
 
 	</Grid>
 </Page>

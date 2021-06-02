@@ -1,11 +1,22 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using LibHexCryptoStandard.Algoritm;
+using LibHexCryptoStandard.Packet;
+using LibHexCryptoStandard.Packet.AES;
+using LibHexUtils.Arrays;
+using LibNet.Meeting.Packets.HexPacket;
+using LibRtspClientSharp.Hex;
 using RtspClientSharp.Rtsp.Authentication;
 using RtspClientSharp.Utils;
+
+using c = LibNet.Meeting.Packets.HexPacket.HexPacketConstants;
 
 namespace RtspClientSharp.Rtsp
 {
@@ -39,6 +50,23 @@ namespace RtspClientSharp.Rtsp
             return responseMessage;
         }
 
+        public Task SendPorts()
+        {
+            int fport = ((IPEndPoint) (NetworkManager.UdpSocketRtpT0.LocalEndPoint)).Port,
+                sport = ((IPEndPoint) (NetworkManager.UdpSocketRtcpT0.LocalEndPoint)).Port,
+                ffport = ((IPEndPoint) (NetworkManager.UdpSocketRtpT1.LocalEndPoint)).Port,
+                ssport = ((IPEndPoint) (NetworkManager.UdpSocketRtcpT1.LocalEndPoint)).Port;
+            var buff = ByteArray.CopyBytes(0, Encoding.UTF8.GetBytes("HCPORT-"), 
+                BitConverter.GetBytes(fport), Encoding.UTF8.GetBytes("-"), BitConverter.GetBytes(sport), Encoding.UTF8.GetBytes("-"),
+                BitConverter.GetBytes(ffport), Encoding.UTF8.GetBytes("-"), BitConverter.GetBytes(ssport),
+                Encoding.UTF8.GetBytes("\r\n"));
+
+            //buff = CipherManager.ProcessData(buff, true, true);
+
+            //ByteArray.Print(buff, "Ports");
+            return WriteAsync(buff, 0, buff.Length);
+        }
+
         public async Task<RtspResponseMessage> ExecuteRequest(RtspRequestMessage requestMessage,
             CancellationToken token, int responseReadPortionSize = 0)
         {
@@ -70,7 +98,7 @@ namespace RtspClientSharp.Rtsp
 
             return responseMessage;
         }
-
+        
         public Task SendRequestAsync(RtspRequestMessage requestMessage, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
@@ -79,9 +107,9 @@ namespace RtspClientSharp.Rtsp
                 AddAuthorizationHeader(requestMessage);
 
             string requestMessageString = requestMessage.ToString();
-
+            
             int written = Encoding.ASCII.GetBytes(requestMessageString, 0, requestMessageString.Length, _buffer, 0);
-            return WriteAsync(_buffer, 0, written);
+            return WriteAsync(_buffer, 0, written);//TOdo:send
         }
 
         public abstract void Dispose();
@@ -89,7 +117,7 @@ namespace RtspClientSharp.Rtsp
         protected abstract Task WriteAsync(byte[] buffer, int offset, int count);
         protected abstract Task<int> ReadAsync(byte[] buffer, int offset, int count);
         protected abstract Task ReadExactAsync(byte[] buffer, int offset, int count);
-
+        
         private async Task<RtspResponseMessage> GetResponseAsync(int responseReadPortionSize = 0)
         {
             int totalRead = await ReadUntilEndOfHeadersAsync(responseReadPortionSize);
@@ -132,9 +160,30 @@ namespace RtspClientSharp.Rtsp
             return rtspResponseMessage;
         }
 
+        //switch decrypt --------------------------------------------------------------------------
+        private ushort len_bytes = 4;
+        
+        private void correctRead(ref int read, ref int totalRead, ref int offset, in int decrypted)
+        {
+            if(read > 1)
+            {
+                read = decrypted;
+                totalRead = read;
+            }
+            else
+            {
+                read = decrypted;
+                totalRead = read;
+                offset = totalRead;
+            }
+        }
+
         private async Task<int> ReadUntilEndOfHeadersAsync(int readPortionSize = 0)
         {
             int offset = 0;
+
+            bool readNew = true;
+            uint readNeeded = 0;
 
             int endOfHeaders;
             int totalRead = 0;
@@ -149,25 +198,84 @@ namespace RtspClientSharp.Rtsp
                 if (count == 0)
                     throw new RtspBadResponseException(
                         $"Response is too large (> {Constants.MaxResponseHeadersSize / 1024} KB)");
-
+                
                 int read = await ReadAsync(_buffer, offset, count);
 
+                //kontrola existencie streamu
                 if (read == 0)
                     throw new EndOfStreamException("End of rtsp stream");
 
                 totalRead += read;
 
-                int startIndex = offset - (Constants.DoubleCrlfBytes.Length - 1);
+                //Vypis prijatych dat
+                if(!Global.strictPrint)
+                {
+                    Console.WriteLine("Recv(" + read + ")");
+                }
+
+                //Ziskanie velkosti Hpaketu
+                if ((read > 8 || totalRead > 8) && readNew && ConnectionParameters.Enryption)
+                {
+                    try
+                    {
+                        readNeeded = ReadNeed();
+
+                        uint ReadNeed()
+                        {
+                            //Span<byte> bytes = _buffer;
+                            return HexPacket.GetSize(_buffer, ByteArray.Search(_buffer, c.nullBytes)/*bytes.IndexOf(HexPacket.GetNullBytes)*/);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
+                    finally
+                    {
+                        readNew = false;
+                    }
+                }
+
+                var pktSize = totalRead - c.GetNullSize - len_bytes;
+
+                //Desifrovanie
+                if ((pktSize == readNeeded/* || totalRead == readNeeded*/) && ConnectionParameters.Enryption && !readNew)
+                {
+
+                    //var readedAfter = await HexNetworkController.decrypt(_buffer, read, 0,
+                    //    ConnectionParameters.Enryption, ConnectionParameters.UseBase64, Global.strictPrint);
+
+                    //if (readedAfter != read)
+                    //{
+                    //    read = readedAfter;
+                    //}
+                    //Console.WriteLine("RecvTotal(" + pktSize + ")");
+
+                    byte[] toDecrypt = new byte[totalRead];
+                    Buffer.BlockCopy(_buffer, 0, toDecrypt, 0, totalRead);
+                    var decrypted = CipherManager.ProcessData(toDecrypt, false, true);
+                    //HexPacketAES hexPacketAes = HexPacketAES.CreatePacketForDecrypt(toDecrypt, true, null);//new HexPacketAES(toDecrypt, ConnectionParameters.UseBase64, EncryptType.Decrypt_hpkt));
+                    //byte[] decrypted = null;
+                    //decrypted
+                    //decrypted = (byte[])hexPacketAes.Decrypt();
+                    //clear default buffer
+                    Array.Clear(_buffer, 0, totalRead);
+                    //Copy back to buffer
+                    Buffer.BlockCopy(decrypted, 0, _buffer, 0, decrypted.Length);
+                    //Correct read sizes
+                    correctRead(ref read, ref totalRead, ref offset, decrypted.Length);
+                }
+
+                int startIndex = offset - (Constants.DoubleCrlfBytes.Length);
 
                 if (startIndex < 0)
                     startIndex = 0;
-
+                
                 endOfHeaders = ArrayUtils.IndexOfBytes(_buffer, Constants.DoubleCrlfBytes, startIndex,
                     totalRead - startIndex);
 
                 offset += read;
             } while (endOfHeaders == -1);
-
             return totalRead;
         }
 

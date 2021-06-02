@@ -7,6 +7,8 @@
 #include <ctime>
 #include <map>
 #include <forward_list>
+
+#include "Global.h"
 #include "net/Logger.h"
 #include "net/NetInterface.h"
 #include "net/SocketUtil.h"
@@ -41,14 +43,18 @@ MediaSession::~MediaSession()
 	}
 }
 
+std::map<uint8_t, uint8_t> data_map;
+
 bool MediaSession::AddSource(MediaChannelId channelId, MediaSource* source)
 {
+	//source->set... zaciatok load
 	source->SetSendFrameCallback([this](MediaChannelId channelId, RtpPacket pkt) {
 		std::forward_list<std::shared_ptr<RtpConnection>> clients;
 		std::map<int, RtpPacket> packets;
 		{
 			std::lock_guard<std::mutex> lock(map_mutex_);
-			for (auto iter = clients_.begin(); iter != clients_.end();) {
+			//fukncia pre registrovanie source ak je klient pripojeny
+			for (auto iter = clients_.begin(); iter != clients_.end();) { 
 				auto conn = iter->second.lock();
 				if (conn == nullptr) {
 					clients_.erase(iter++);
@@ -63,7 +69,31 @@ bool MediaSession::AddSource(MediaChannelId channelId, MediaSource* source)
 							tmpPkt.last = pkt.last;
 							tmpPkt.timestamp = pkt.timestamp;
 							tmpPkt.type = pkt.type;
-							packets.emplace(id, tmpPkt);
+#if _DEBUG
+							uint8_t key = tmpPkt.type;
+							/*if (data_map.contains(key))
+							{
+								if (data_map[key] < 5)
+								{
+									std::cout << "\nType: " << +key << " , Data size: " << tmpPkt.size << std::endl;
+									data_map[key] = data_map[key] + 1;
+									for (int i = 0; i < 5; i++)
+									{
+										std::cout << +(tmpPkt.data.get()[tmpPkt.size - i]) << "-";
+									}std::cout << std::endl;
+								}
+							}
+							else
+							{
+								data_map.insert_or_assign((unsigned char)key, (unsigned char)0);
+								std::cout << "\nType: " << +key << " , Data size: " << tmpPkt.size << std::endl;
+								for (int i = 0; i < 5; i++)
+								{
+									std::cout << +(tmpPkt.data.get()[tmpPkt.size - i]) << "-";
+								}std::cout << std::endl;
+							}*/
+#endif
+							packets.emplace(id, tmpPkt);//pridanie paket data do list
 						}
 						clients.emplace_front(conn);
 					}
@@ -80,7 +110,7 @@ bool MediaSession::AddSource(MediaChannelId channelId, MediaSource* source)
 				auto iter2 = packets.find(id);
 				if (iter2 != packets.end()) {
 					count++;
-					ret = iter->SendRtpPacket(channelId, iter2->second);
+					ret = iter->SendRtpPacket(channelId, iter2->second); //Odoslanie dát
 					if (is_multicast_ && ret == 0) {
 						break;
 					}				

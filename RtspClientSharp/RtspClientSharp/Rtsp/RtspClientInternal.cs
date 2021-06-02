@@ -6,8 +6,17 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using LibHexCryptoStandard.Algoritm;
+using LibHexCryptoStandard.Packet;
+using LibHexCryptoStandard.Packet.AES;
+using LibNet.Meeting.Packets.HexPacket;
+using LibNet.Utils;
+using LibRtspClientSharp.Hex;
+using Org.BouncyCastle.Asn1.Cmp;
 using RtspClientSharp.Codecs.Audio;
 using RtspClientSharp.Codecs.Video;
 using RtspClientSharp.MediaParsers;
@@ -59,20 +68,29 @@ namespace RtspClientSharp.Rtsp
             Uri fixedRtspUri = connectionParameters.GetFixedRtspUri();
             _requestMessageFactory = new RtspRequestMessageFactory(fixedRtspUri, connectionParameters.UserAgent);
         }
-
+        
         public async Task ConnectAsync(CancellationToken token)
         {
+            //connection
             IRtspTransportClient rtspTransportClient = _transportClientProvider();
             Volatile.Write(ref _rtspTransportClient, rtspTransportClient);
 
             await _rtspTransportClient.ConnectAsync(token);
 
+            if (NetworkManager.ConnectionParameters.UseServer)
+            {
+                await _rtspTransportClient.SendPorts();
+                Thread.Sleep(10);
+            }
+
+            //cseq 1
             RtspRequestMessage optionsRequest = _requestMessageFactory.CreateOptionsRequest();
             RtspResponseMessage optionsResponse = await _rtspTransportClient.ExecuteRequest(optionsRequest, token);
 
             if (optionsResponse.StatusCode == RtspStatusCode.Ok)
                 ParsePublicHeader(optionsResponse.Headers[WellKnownHeaders.Public]);
 
+            //cseq 2
             RtspRequestMessage describeRequest = _requestMessageFactory.CreateDescribeRequest();
             RtspResponseMessage describeResponse =
                 await _rtspTransportClient.EnsureExecuteRequest(describeRequest, token);
@@ -85,6 +103,8 @@ namespace RtspClientSharp.Rtsp
             var parser = new SdpParser();
             IEnumerable<RtspTrackInfo> tracks = parser.Parse(describeResponse.ResponseBody);
 
+            //Thread.Sleep(100000);
+
             bool anyTrackRequested = false;
             foreach (RtspMediaTrackInfo track in GetTracksToSetup(tracks))
             {
@@ -95,10 +115,12 @@ namespace RtspClientSharp.Rtsp
             if (!anyTrackRequested)
                 throw new RtspClientException("Any suitable track is not found");
 
+            //cseq 5
             RtspRequestMessage playRequest = _requestMessageFactory.CreatePlayRequest();
             await _rtspTransportClient.EnsureExecuteRequest(playRequest, token, 1);
         }
 
+        //Prijem dat
         public async Task ReceiveAsync(CancellationToken token)
         {
             if (_rtspTransportClient == null)
@@ -178,6 +200,8 @@ namespace RtspClientSharp.Rtsp
             return RtcpReportIntervalBaseMs + _random.Next(0, 11) * 100;
         }
 
+        private int t = 0;
+
         private async Task SetupTrackAsync(RtspMediaTrackInfo track, CancellationToken token)
         {
             RtspRequestMessage setupRequest;
@@ -190,21 +214,39 @@ namespace RtspClientSharp.Rtsp
 
             if (_connectionParameters.RtpTransport == RtpTransportProtocol.UDP)
             {
-                rtpClient = NetworkClientFactory.CreateUdpClient();
-                rtcpClient = NetworkClientFactory.CreateUdpClient();
+                if (NetworkManager.ConnectionParameters.UseServer)
+                {
+                    if (t == 0)
+                    {
+                        rtpClient = NetworkManager.UdpSocketRtpT0;
+                        rtcpClient = NetworkManager.UdpSocketRtcpT0;
+                        t++;
+                    }else if (t == 1)
+                    {
+                        rtpClient = NetworkManager.UdpSocketRtpT1;
+                        rtcpClient = NetworkManager.UdpSocketRtcpT1;
+                    }
+                }
+                else
+                {
+                    rtpClient = NetworkClientFactory.CreateUdpClient();
+                    rtcpClient = NetworkClientFactory.CreateUdpClient();
+                }
 
                 try
                 {
+                    int rtpPort, rtcpPort;
+
                     IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, 0);
-                    rtpClient.Bind(endPoint);
+                    if(!NetworkManager.ConnectionParameters.UseServer) rtpClient.Bind(endPoint);
 
-                    int rtpPort = ((IPEndPoint)rtpClient.LocalEndPoint).Port;
+                    rtpPort = ((IPEndPoint) rtpClient.LocalEndPoint).Port;
 
-                    endPoint = new IPEndPoint(IPAddress.Any, rtpPort + 1);
+                    if (!NetworkManager.ConnectionParameters.UseServer) endPoint = new IPEndPoint(IPAddress.Any, rtpPort + 1);
 
                     try
                     {
-                        rtcpClient.Bind(endPoint);
+                        if (!NetworkManager.ConnectionParameters.UseServer) rtcpClient.Bind(endPoint);
                     }
                     catch (SocketException e) when (e.SocketErrorCode == SocketError.AddressAlreadyInUse)
                     {
@@ -212,8 +254,8 @@ namespace RtspClientSharp.Rtsp
                         rtcpClient.Bind(endPoint);
                     }
 
-                    int rtcpPort = ((IPEndPoint)rtcpClient.LocalEndPoint).Port;
-
+                    rtcpPort = ((IPEndPoint) rtcpClient.LocalEndPoint).Port;
+                  
                     setupRequest = _requestMessageFactory.CreateSetupUdpUnicastRequest(track.TrackName,
                         rtpPort, rtcpPort);
                     setupResponse = await _rtspTransportClient.EnsureExecuteRequest(setupRequest, token);
@@ -485,10 +527,9 @@ namespace RtspClientSharp.Rtsp
             }
         }
 
-        //TODO: find RICEVE
         private async Task ReceiveOverTcpAsync(Stream rtspStream, CancellationToken token)
         {
-            _tpktStream = new TpktStream(rtspStream);
+            _tpktStream = new TpktStream(rtspStream, _connectionParameters);
 
             int nextRtcpReportInterval = GetNextRtcpReportIntervalMs();
             int lastTimeRtcpReportsSent = Environment.TickCount;
@@ -561,10 +602,20 @@ namespace RtspClientSharp.Rtsp
 
             while (!token.IsCancellationRequested)
             {
-                //TODO: UDP DATA
                 int read = await client.ReceiveAsync(bufferSegment, SocketFlags.None);
+                byte[] toProcess = null;
 
-                var payloadSegment = new ArraySegment<byte>(readBuffer, 0, read);
+                DecryptData(read, bufferSegment, ref toProcess);
+
+                var payloadSegment = toProcess != null
+                    ? new ArraySegment<byte>(toProcess, 0, toProcess.Length)
+                    : new ArraySegment<byte>(readBuffer, 0, read);
+
+                //var outbytes = await HexNetworkController.ReadBySocket(client, bufferSegment, 0, _connectionParameters.Enryption,
+                //    _connectionParameters.UseBase64, Global.strictPrint);
+                //int read = outbytes.Length;
+                //var payloadSegment = new ArraySegment<byte>(outbytes, 0, read);
+
                 rtpStream.Process(payloadSegment);
 
                 int ticksNow = Environment.TickCount;
@@ -576,6 +627,14 @@ namespace RtspClientSharp.Rtsp
 
                 IEnumerable<RtcpPacket> packets = reportsProvider.GetReportPackets();
                 ArraySegment<byte> byteSegment = SerializeRtcpPackets(packets, bufferStream);
+
+                //Console.Write("!!! - ");
+                //PrintNet.printSend(client, byteSegment.Count);
+                //if (NetworkManager.ConnectionParameters.Enryption)
+                //{
+                //    var encr = CipherManager.ProcessData(byteSegment.Array, true, true);
+                //    byteSegment = new ArraySegment<byte>(encr);
+                //}
 
                 await client.SendAsync(byteSegment, SocketFlags.None);
             }
@@ -590,7 +649,6 @@ namespace RtspClientSharp.Rtsp
 
             while (!token.IsCancellationRequested)
             {
-                //TODO: UDP CONTROL
                 int read = await client.ReceiveAsync(bufferSegment, SocketFlags.None);
 
                 var payloadSegment = new ArraySegment<byte>(readBuffer, 0, read);
@@ -607,6 +665,34 @@ namespace RtspClientSharp.Rtsp
 
             byte[] streamBuffer = bufferStream.GetBuffer();
             return new ArraySegment<byte>(streamBuffer, 0, (int)bufferStream.Position);
+        }
+
+        private void DecryptData(in int read, in ArraySegment<byte> bufferSegment, ref byte[] toProcess)
+        {
+            //Vypis
+            if (_connectionParameters.UseBase64 && !Global.strictPrint)
+            {
+                Console.WriteLine("Recv(" + read + "):" +
+                                  Encoding.UTF8.GetString(
+                                      Convert.FromBase64String(
+                                          Encoding.UTF8
+                                              .GetString(bufferSegment.Array, 0, bufferSegment.Array.Length)))); //.GetString(bufferSegment.Array, 0, read));
+            }
+            else
+            {
+                if (!Global.onlyFrames)
+                {
+                    Console.WriteLine("Recv(" + read + ")");
+                }
+            }
+
+            //desifrovanie TODO: asi chyba
+            if (!_connectionParameters.Enryption || read <= 8) return;
+            var toDecryptBytes = new byte[read];
+            Buffer.BlockCopy(bufferSegment.Array, 0, toDecryptBytes, 0, read);
+            //hexPacketAes = HexPacketAES.CreatePacketForDecrypt(toDecryptBytes, true, null);//new HexPacketAES(toDecryptBytes, _connectionParameters.UseBase64, EncryptType.Decrypt);
+            toProcess = CipherManager.ProcessData(toDecryptBytes, false, true);
+            //toProcess = (byte[]) hexPacketAes.Decrypt();
         }
     }
 }

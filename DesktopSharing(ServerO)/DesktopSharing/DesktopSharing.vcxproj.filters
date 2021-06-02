@@ -59,6 +59,9 @@
     <Filter Include="csrc">
       <UniqueIdentifier>{29fd7463-869b-41ef-8bd7-9af0981f4ba5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Hex">
+      <UniqueIdentifier>{f6080465-c7bf-4549-8026-08ef5a2e3635}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -466,6 +469,21 @@
     <ClCompile Include="csrc\getopt.c">
       <Filter>csrc</Filter>
     </ClCompile>
+    <ClCompile Include="AesGcm.cpp">
+      <Filter>src\Hex</Filter>
+    </ClCompile>
+    <ClCompile Include="Global.cpp">
+      <Filter>src\Hex</Filter>
+    </ClCompile>
+    <ClCompile Include="HexPacket.cpp">
+      <Filter>src\Hex</Filter>
+    </ClCompile>
+    <ClCompile Include="NamedPipe.cpp">
+      <Filter>src\Hex</Filter>
+    </ClCompile>
+    <ClCompile Include="Parser.cpp">
+      <Filter>src\Hex</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="net\Acceptor.h">
@@ -788,6 +806,21 @@
     </ClInclude>
     <ClInclude Include="csrc\getopt.h">
       <Filter>csrc</Filter>
+    </ClInclude>
+    <ClInclude Include="AesGcm.h">
+      <Filter>src\Hex</Filter>
+    </ClInclude>
+    <ClInclude Include="Global.h">
+      <Filter>src\Hex</Filter>
+    </ClInclude>
+    <ClInclude Include="HexPacket.h">
+      <Filter>src\Hex</Filter>
+    </ClInclude>
+    <ClInclude Include="NamedPipe.h">
+      <Filter>src\Hex</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser.h">
+      <Filter>src\Hex</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

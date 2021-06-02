@@ -3,8 +3,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using LibHexCryptoStandard.Packet;
+using LibHexCryptoStandard.Packet.AES;
+using LibHexUtils.Arrays;
+using LibNet.Utils;
+using LibRtspClientSharp.Hex;
 using RtspClientSharp.Utils;
 
 namespace RtspClientSharp.Rtsp
@@ -21,11 +27,12 @@ namespace RtspClientSharp.Rtsp
         public RtspTcpTransportClient(ConnectionParameters connectionParameters)
             : base(connectionParameters)
         {
+            NetworkManager.InitConParams(connectionParameters);
         }
 
         public override async Task ConnectAsync(CancellationToken token)
         {
-            _tcpClient = NetworkClientFactory.CreateTcpClient();
+            _tcpClient = NetworkManager.ConnectionParameters.UseServer ? NetworkManager.TcpSocket : NetworkClientFactory.CreateTcpClient();
 
             Uri connectionUri = ConnectionParameters.ConnectionUri;
 
@@ -53,12 +60,60 @@ namespace RtspClientSharp.Rtsp
             _tcpClient?.Close();
         }
 
+        
         protected override Task WriteAsync(byte[] buffer, int offset, int count)
         {
             Debug.Assert(_networkStream != null, "_networkStream != null");
+            
+            //if(!Global.strictPrint)
+            //{
+            //    Console.WriteLine("SendClear(" + count + "):" + Encoding.UTF8.GetString(buffer, offset, count));
+            //}
+            //else
+            //{
+            //    if (!Global.onlyFrames)
+            //    {
+            //        Console.WriteLine("SendClear(" + count + ")");
+            //    }
+            //}
+
+            if (ConnectionParameters.Enryption)
+            {
+                byte[] bytes = new byte[count];
+                Buffer.BlockCopy(buffer, offset, bytes, 0, count);
+                //var hexPacket = HexPacketAES.CreatePacketForEncrypt(bytes, ConnectionParameters.UseBase64, null);
+                //var toSend = (byte[])hexPacket.Encrypt();
+                var toSend = CipherManager.ProcessData(bytes, true, true);
+                if (buffer.Length < toSend.Length)
+                {
+                    var bufTmp = new byte[toSend.Length + offset];
+                    if(offset > 0) Buffer.BlockCopy(buffer, 0, bufTmp, 0, offset);
+                    buffer = bufTmp;
+                }
+
+                Buffer.BlockCopy(toSend, 0, buffer, offset, toSend.Length);
+                count = toSend.Length;
+            }
+
+            if (Global.strictPrint)
+            {
+                Console.WriteLine("Sending (" + count + ")");
+                ByteArray.Print(buffer, "Data", 0, count);
+            }
+
+            //if (!Global.onlyFrames)
+            //{
+            //    Console.WriteLine("Send(" + count + ")");
+            //    if(!Global.strictPrint)
+            //    {
+            //        Console.WriteLine(Encoding.UTF8.GetString(buffer, 8, count));
+            //    }
+            //}
+
             return _networkStream.WriteAsync(buffer, offset, count);
         }
 
+        //todo:sem read decrypt
         protected override Task<int> ReadAsync(byte[] buffer, int offset, int count)
         {
             Debug.Assert(_networkStream != null, "_networkStream != null");
@@ -68,7 +123,7 @@ namespace RtspClientSharp.Rtsp
         protected override Task ReadExactAsync(byte[] buffer, int offset, int count)
         {
             Debug.Assert(_networkStream != null, "_networkStream != null");
-            return _networkStream.ReadExactAsync(buffer, offset, count);
+            return _networkStream.ReadExactAsync(buffer, offset, count, ConnectionParameters.Enryption, ConnectionParameters.UseBase64);
         }
     }
 }

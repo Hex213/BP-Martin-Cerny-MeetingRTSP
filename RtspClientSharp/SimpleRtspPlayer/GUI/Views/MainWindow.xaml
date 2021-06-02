@@ -10,7 +10,7 @@
         mc:Ignorable="d"
         Title="SimpleRtspPlayer" Width="902" Height="500" MinWidth="902" MinHeight="500"
         WindowStartupLocation="CenterScreen"
-        DataContext="{Binding MainWindowViewModel, Source={StaticResource ViewModelLocator}}">
+        DataContext="{Binding MainWindowViewModel, Source={StaticResource ViewModelLocator}}" Closing="MainWindowLayout_Closing">
 	<Window.Resources>
 		<ControlTemplate x:Key="ValidationTemplate">
 			<DockPanel>

@@ -6,7 +6,7 @@ using System.Drawing.Text;
 using System.Windows.Forms;
 using LibUIAcademyFramework.Properties;
 
-namespace LibUIAcademy.XanderUI
+namespace LibUIAcademyFramework.XanderUI
 {
     public class XUIButton : Control
     {
